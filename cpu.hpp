@@ -4,13 +4,23 @@
 #include <cstdint>
 
 //emulation of Sharp LR35902 8bit cpu
-class Cpu{
+class CPU{
     public:
+        void execute(uint8_t opcode);
 
+        void add(uint16_t *dst, uint8_t value); //src=hl, dst=bc
     private:
+        //we can use bitwise operations with these flags to set the flag bits in our registers
+        enum class RegisterFlags{
+            ZERO_FLAG = (1 << 7),
+            SUBTRACT_FLAG = (1 << 6),
+            HALF_CARRY_FLAG = (1 << 5),
+            CARRY_FLAG = (1 << 4)
+        };
+
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
-        //registers can be accessed as either the individual 8bit or combined 16 bit.
+        //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags
         struct {
             union {
                 struct {
