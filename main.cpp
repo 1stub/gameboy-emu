@@ -1,7 +1,11 @@
 #include <iostream>
 
+#include "cpu.hpp"
+
 int main(){
-    std::cout << "Hello World" << std::endl;
+    CPU cpu;
+    cpu.execute(0x80);
+    cpu.printRegisters();
 
     return 0;
 }

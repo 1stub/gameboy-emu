@@ -2,13 +2,15 @@
 #define CPU_HPP
 
 #include <cstdint>
+#include <iostream>
 
 //emulation of Sharp LR35902 8bit cpu
 class CPU{
     public:
         void execute(uint8_t opcode);
+        void printRegisters();
 
-        void add(uint16_t *dst, uint8_t value); //src=hl, dst=bc
+        void add(uint8_t *dst, uint8_t value); //src=hl, dst=bc
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         enum class RegisterFlags{
