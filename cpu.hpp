@@ -3,17 +3,23 @@
 
 #include <cstdint>
 #include <iostream>
+#include <assert.h>
 
 //emulation of Sharp LR35902 8bit cpu
 class CPU{
     public:
+        CPU();
         void execute(uint8_t opcode);
         void printRegisters();
-
-        void add(uint8_t *dst, uint8_t value); //src=hl, dst=bc
+        void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l);
+        void checkFlags(bool zero, bool subtract, bool halfCarry, bool carry);
+        
+        uint8_t read(uint16_t addr);
+        void add(uint8_t *dst, uint8_t value); //
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
-        enum class RegisterFlags{
+        uint8_t memory[65536]; //roms are 256kb 
+        enum class RegisterFlags : uint8_t{
             ZERO_FLAG = (1 << 7),
             SUBTRACT_FLAG = (1 << 6),
             HALF_CARRY_FLAG = (1 << 5),
