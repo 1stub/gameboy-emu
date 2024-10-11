@@ -3,13 +3,13 @@
 //need to implement some very basic logic to load opcodes from external source into memory, then simulate using pc to load and modify values
 
 CPU::CPU(){
-    a=b=c=d=e=f=h=l=0;
-    hl=0;
+    a=b=c=d=e=f=h=l=0x0;
+    hl=0x0;
     pc = 0x100;
     sp = 0xFFFE; //this may not be right
 }
 
-void CPU::execute(uint8_t opcode){
+uint16_t CPU::execute(uint8_t opcode){
     switch(opcode){
         case (0x80): //ADD A, B
             add(&a, b);
@@ -38,10 +38,36 @@ void CPU::execute(uint8_t opcode){
         case (0x87): //ADD A, A
             add(&a, a);
             break;
+        case (0x88):
+            adc(&a, b);
+            break;
+        case (0x89): //ADD A, C
+            adc(&a, c);
+            break;
+        case (0x8A): //ADD A, D
+            adc(&a, d);
+            break;
+        case (0x8B): //ADD A, E
+            adc(&a, e);
+            break;
+        case (0x8C): //ADD A, H
+            adc(&a, h);
+            break;
+        case (0x8D): //ADD A, L
+            adc(&a, l);
+            break;
+        case (0x8E): //ADD A, *HL
+            {
+                uint8_t val = read(hl);
+                adc(&a, val);
+                break;
+            }
+        case (0x8F): //ADD A, A
+            adc(&a, a);
+            break;
         default: break;
-
-        pc++;
     };
+    return pc++;
 }
 
 uint8_t CPU::read(uint16_t addr){ //we want value stored at addr, addr is 16 bits our reg 8
@@ -76,10 +102,7 @@ void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _
 }
 
 template<RegisterFlags flag>
-void CPU::setFlags(uint8_t *dst, uint8_t val){
-    uint16_t fullResult = *dst + val;
-    uint8_t result = (uint8_t)fullResult;
-
+void CPU::setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult){
     if (flag == RegisterFlags::ZERO_FLAG && !(result & 0xFF)){
         f |= (uint8_t)RegisterFlags::ZERO_FLAG;
         std::cout << "F just after zero: " << std::hex << (int)f << std::endl;
@@ -96,18 +119,55 @@ void CPU::setFlags(uint8_t *dst, uint8_t val){
     }
     
     //we set half carry if operation on low 4 order bits exceeds 15 
-    if (flag == RegisterFlags::HALF_CARRY_FLAG && ((*dst & 0xF) + (val & 0xF)) & 0x10){
+    if (flag == RegisterFlags::HALF_CARRY_FLAG && (((*dst & 0xF) + (val & 0xF)) & 0x10)){
         f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
         std::cout << "F just after half carry: " << std::hex << (int)f << std::endl;
     }
 }
 
-void CPU::add(uint8_t *dst, uint8_t value){
-    f &= ~f; //reset flags
+template<RegisterFlags flag>
+void CPU::resetFlags(){
+    if(flag == RegisterFlags::ZERO_FLAG){
+        f &= ~((uint8_t)RegisterFlags::ZERO_FLAG);
+    }
+    
+    if(flag == RegisterFlags::SUBTRACT_FLAG){
+        f &= ~((uint8_t)RegisterFlags::SUBTRACT_FLAG);
+    }
+    
+    if(flag == RegisterFlags::CARRY_FLAG){ 
+        f &= ~((uint8_t)RegisterFlags::CARRY_FLAG);
+    }
+    
+    if(flag == RegisterFlags::HALF_CARRY_FLAG){
+        f &= ~((uint8_t)RegisterFlags::HALF_CARRY_FLAG);
+    }
+}
 
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value); 
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value);
-    setFlags<RegisterFlags::CARRY_FLAG>(dst, value); 
+void CPU::add(uint8_t *dst, uint8_t value){
+    std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
+    
+    uint16_t fullResult = *dst + value;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult); 
 
     *dst += value;
+}
+
+void CPU::adc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
+    uint16_t fullResult = *dst + value + carryBitSet;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
+
+    *dst += value + carryBitSet;
 }

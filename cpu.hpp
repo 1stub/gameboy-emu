@@ -16,14 +16,18 @@ enum class RegisterFlags : uint8_t{
 class CPU{
     public:
         CPU();
-        void execute(uint8_t opcode);
+        uint16_t execute(uint8_t opcode); //we need to return the next instruction pc points to 
         void printRegisters();
         void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l);
         template<RegisterFlags f>
-        void setFlags(uint8_t *dst, uint8_t val);
-        
+        void setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult); 
+        template<RegisterFlags flag>
+        void resetFlags();
         uint8_t read(uint16_t addr);
+        
+        //instructions
         void add(uint8_t *dst, uint8_t value); //
+        void adc(uint8_t *dst, uint8_t value);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint8_t memory[0xFFFF]; //roms are 256kb 
