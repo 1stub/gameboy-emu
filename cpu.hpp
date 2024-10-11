@@ -18,7 +18,8 @@ class CPU{
         void add(uint8_t *dst, uint8_t value); //
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
-        uint8_t memory[65536]; //roms are 256kb 
+        uint8_t memory[0xFFFF]; //roms are 256kb 
+        
         enum class RegisterFlags : uint8_t{
             ZERO_FLAG = (1 << 7),
             SUBTRACT_FLAG = (1 << 6),

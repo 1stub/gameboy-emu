@@ -1,5 +1,7 @@
 #include "cpu.hpp"
 
+//need to implement some very basic logic to load opcodes from external source into memory, then simulate using pc to load and modify values
+
 CPU::CPU(){
     a=b=c=d=e=f=h=l=0;
     hl=0;
@@ -37,6 +39,8 @@ void CPU::execute(uint8_t opcode){
             add(&a, a);
             break;
         default: break;
+
+        pc++;
     };
 }
 
@@ -61,7 +65,7 @@ void CPU::printRegisters(){
     std::cout << "SP: " << std::hex << (int)sp << std::endl;
 }
 
-void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l) {
+void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l) { //just using to debug
     a = _a;
     b = _b;
     c = _c;
@@ -79,24 +83,27 @@ void CPU::checkFlags(bool zero, bool subtract, bool halfCarry, bool carry) {
 }
 
 void CPU::add(uint8_t *dst, uint8_t value){
-    *dst += value;
+    uint16_t fullResult = *dst + value;
+    uint8_t result = (uint8_t)fullResult;
 
-    if(*dst & 0xFF){ //set zero flag if result is zero
-        std::cout << "zero flag" << std::endl;
+    f &= ~f; //reset flags
+
+    //would be much smarter to make these flags own function based on what needs to be set
+    if(!(result & 0xFF)){ //set zero flag if result is zero
         f |= (uint8_t)RegisterFlags::ZERO_FLAG;
+        std::cout << "F just after zero: " << std::hex << (int)f << std::endl;
     }
 
-    f &= (uint8_t)RegisterFlags::SUBTRACT_FLAG; //reset subtract flag
-    
-    if(((a & 0xF) + (*dst & 0xF)) & 0x10){ //set half carry if needed
+    //we set half carry if result > 15, aka our value exceedes low order 4 bits 
+    if(((*dst & 0xF) + (value & 0xF)) & 0x10){ //set half carry if needed
         f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
-    }else{
-        f &= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
+        std::cout << "F just after half carry: " << std::hex << (int)f << std::endl;
     }
 
-    if(*dst > 0xFF){ //set carry if needed
+    if(fullResult > 0xFF){ //set carry if needed
         f |= (uint8_t)RegisterFlags::CARRY_FLAG;
-    }else{
-        f &= (uint8_t)RegisterFlags::CARRY_FLAG;
+        std::cout << "F just after carry: " << std::hex << (int)f << std::endl;
     }
+
+    *dst += value;
 }
