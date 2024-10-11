@@ -11,7 +11,7 @@ int main(){
     cpu.printRegisters(); // Print after operation
 
     // Test Case 2: Result is zero
-    cpu.setRegisters(0x0A, 0xF6, 0, 0, 0, 0, 0, 0); // A=10, B=246
+    cpu.setRegisters(0x60, 0xA0, 0, 0, 0, 0, 0, 0); 
     cpu.execute(0x80); // Execute ADD A, B
     cpu.printRegisters(); // Print after operation
 

@@ -75,35 +75,39 @@ void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _
     l = _l;
 }
 
-void CPU::checkFlags(bool zero, bool subtract, bool halfCarry, bool carry) {
-    assert((f & (uint8_t)RegisterFlags::ZERO_FLAG) == (zero ? (uint8_t)RegisterFlags::ZERO_FLAG : 0));
-    assert((f & (uint8_t)RegisterFlags::SUBTRACT_FLAG) == (subtract ? (uint8_t)RegisterFlags::SUBTRACT_FLAG : 0));
-    assert((f & (uint8_t)RegisterFlags::HALF_CARRY_FLAG) == (halfCarry ? (uint8_t)RegisterFlags::HALF_CARRY_FLAG : 0));
-    assert((f & (uint8_t)RegisterFlags::CARRY_FLAG) == (carry ? (uint8_t)RegisterFlags::CARRY_FLAG : 0));
-}
-
-void CPU::add(uint8_t *dst, uint8_t value){
-    uint16_t fullResult = *dst + value;
+template<RegisterFlags flag>
+void CPU::setFlags(uint8_t *dst, uint8_t val){
+    uint16_t fullResult = *dst + val;
     uint8_t result = (uint8_t)fullResult;
 
-    f &= ~f; //reset flags
-
-    //would be much smarter to make these flags own function based on what needs to be set
-    if(!(result & 0xFF)){ //set zero flag if result is zero
+    if (flag == RegisterFlags::ZERO_FLAG && !(result & 0xFF)){
         f |= (uint8_t)RegisterFlags::ZERO_FLAG;
         std::cout << "F just after zero: " << std::hex << (int)f << std::endl;
     }
-
-    //we set half carry if result > 15, aka our value exceedes low order 4 bits 
-    if(((*dst & 0xF) + (value & 0xF)) & 0x10){ //set half carry if needed
-        f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
-        std::cout << "F just after half carry: " << std::hex << (int)f << std::endl;
+    
+    if (flag == RegisterFlags::SUBTRACT_FLAG){
+        f |= (uint8_t)RegisterFlags::SUBTRACT_FLAG;
+        std::cout << "F just after subtract flag: " << std::hex << (int)f << std::endl;
     }
-
-    if(fullResult > 0xFF){ //set carry if needed
+    
+    if (flag == RegisterFlags::CARRY_FLAG && fullResult > 0xFF){
         f |= (uint8_t)RegisterFlags::CARRY_FLAG;
         std::cout << "F just after carry: " << std::hex << (int)f << std::endl;
     }
+    
+    //we set half carry if operation on low 4 order bits exceeds 15 
+    if (flag == RegisterFlags::HALF_CARRY_FLAG && ((*dst & 0xF) + (val & 0xF)) & 0x10){
+        f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
+        std::cout << "F just after half carry: " << std::hex << (int)f << std::endl;
+    }
+}
+
+void CPU::add(uint8_t *dst, uint8_t value){
+    f &= ~f; //reset flags
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value); 
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value); 
 
     *dst += value;
 }
