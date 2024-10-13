@@ -4,50 +4,12 @@
 
 int main(){
     CPU cpu;
+    cpu.setRegisters(0x12, 0x23, 0x1, 0x2, 0x3, 0x4, 0x0, 0x0);
 
-    // Test Case 1: Add A and B
-    cpu.setRegisters(0x5, 0xA, 0, 0, 0, 0, 0, 0); // A=5, B=10
-    cpu.execute(0x88); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-    // Test Case 2: Result is zero
-    cpu.setRegisters(0x60, 0xA0, 0, 0, 0, 0, 0, 0); 
-    cpu.execute(0x88); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-
-    // Test Case 3: Carry generation
-    cpu.setRegisters(0xC8, 0x64, 0, 0, 0, 0, 0, 0); // A=200, B=100
-    cpu.execute(0x88); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-
-    // Test Case 4: Half-carry generation
-    cpu.setRegisters(0xF, 0x1, 0, 0, 0, 0, 0, 0); // A=0x0F, B=0x01
-    cpu.execute(0x88); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-    // Test Case 1: Add A and B
-    cpu.setRegisters(0x5, 0xA, 0, 0, 0, 0, 0, 0); // A=5, B=10
-    cpu.execute(0x80); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-    // Test Case 2: Result is zero
-    cpu.setRegisters(0x60, 0xA0, 0, 0, 0, 0, 0, 0); 
-    cpu.execute(0x80); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-
-    // Test Case 3: Carry generation
-    cpu.setRegisters(0xC8, 0x64, 0, 0, 0, 0, 0, 0); // A=200, B=100
-    cpu.execute(0x80); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
-
-
-    // Test Case 4: Half-carry generation
-    cpu.setRegisters(0xF, 0x1, 0, 0, 0, 0, 0, 0); // A=0x0F, B=0x01
-    cpu.execute(0x80); // Execute ADD A, B
-    cpu.printRegisters(); // Print after operation
+    for(uint16_t opcode = 0; opcode <= 0xFF; opcode++){
+        std::cout << "opcode: " << std::hex << opcode << std::endl;
+        cpu.execute(opcode);
+    }
 
     return 0;
 }

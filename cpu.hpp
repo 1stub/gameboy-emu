@@ -26,8 +26,10 @@ class CPU{
         uint8_t read(uint16_t addr);
         
         //instructions
-        void add(uint8_t *dst, uint8_t value); //
+        void add(uint8_t *dst, uint8_t value); 
         void adc(uint8_t *dst, uint8_t value);
+        void sub(uint8_t *dst, uint8_t value);
+        void sbc(uint8_t *dst, uint8_t value);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint8_t memory[0xFFFF]; //roms are 256kb 

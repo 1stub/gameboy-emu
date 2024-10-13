@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 
 //need to implement some very basic logic to load opcodes from external source into memory, then simulate using pc to load and modify values
+//looks like using blarg tests will be best here
 
 CPU::CPU(){
     a=b=c=d=e=f=h=l=0x0;
@@ -13,6 +14,7 @@ uint16_t CPU::execute(uint8_t opcode){
     switch(opcode){
         case (0x80): //ADD A, B
             add(&a, b);
+            
             break;
         case (0x81): //ADD A, C
             add(&a, c);
@@ -65,8 +67,63 @@ uint16_t CPU::execute(uint8_t opcode){
         case (0x8F): //ADD A, A
             adc(&a, a);
             break;
-        default: break;
+        case (0x90): 
+            sub(&a, b);
+            break;
+        case (0x91): 
+            sub(&a, c);
+            break;
+        case (0x92): 
+            sub(&a, d);
+            break;
+        case (0x93): 
+            sub(&a, e);
+            break;
+        case (0x94): 
+            sub(&a, h);
+            break;
+        case (0x95): 
+            sub(&a, l);
+            break;
+        case (0x96): 
+            {
+                uint8_t val = read(hl);
+                sub(&a, val);
+                break;
+            }
+        case (0x97): 
+            sub(&a, a);
+            break;
+        case (0x98):
+            sbc(&a, b);
+            break;
+        case (0x99): 
+            sbc(&a, c);
+            break;
+        case (0x9A): 
+            sbc(&a, d);
+            break;
+        case (0x9B): 
+            sbc(&a, e);
+            break;
+        case (0x9C): 
+            sbc(&a, h);
+            break;
+        case (0x9D): 
+            sbc(&a, l);
+            break;
+        case (0x9E): 
+            {
+                uint8_t val = read(hl);
+                sbc(&a, val);
+                break;
+            }
+        case (0x9F): 
+            sbc(&a, a);
+            break;
+        default:  break;
     };
+    std::cout << "a: " << std::hex << (int)a << std::endl;
     return pc++;
 }
 
@@ -170,4 +227,32 @@ void CPU::adc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
     setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
 
     *dst += value + carryBitSet;
+}
+
+void CPU::sub(uint8_t *dst, uint8_t value){
+    std::cout << "subtracting " << (int)value << " from " << (int)(*dst) << std::endl;
+    
+    uint16_t fullResult = *dst - value;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult); 
+
+    *dst = result;
+}
+
+void CPU::sbc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
+    uint16_t fullResult = *dst - value - carryBitSet;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
+
+    *dst = result;
 }
