@@ -433,37 +433,59 @@ uint16_t CPU::execute(uint8_t opcode){
         case (0xAF): 
             i_xor(&a, a);
             break;
-        case (0xB0): 
+        case (0xB0):
+            i_or(&a, b);
             break;
         case (0xB1): 
+            i_or(&a, c);
             break;
-        case (0xB2): 
+        case (0xB2):
+            i_or(&a, d);
             break;
-        case (0xB3): 
+        case (0xB3):
+            i_or(&a, e);
             break;
-        case (0xB4): 
+        case (0xB4):
+            i_or(&a, h);
             break;
-        case (0xB5): 
+        case (0xB5):
+            i_or(&a, l);
             break;
-        case (0xB6): 
-            break;
-        case (0xB7): 
+        case (0xB6):
+            {
+                uint8_t val = memory->read(hl);
+                i_or(&a, val);
+                break;
+            }
+        case (0xB7):
+            i_or(&a, a);
             break;
         case (0xB8):
+            cp(&a, b);
             break;
         case (0xB9): 
+            cp(&a, c);
             break;
-        case (0xBA): 
+        case (0xBA):
+            cp(&a, d);
             break;
         case (0xBB): 
+            cp(&a, e);
             break;
         case (0xBC): 
+            cp(&a, h);
             break;
-        case (0xBD): 
+        case (0xBD):
+            cp(&a, l);
             break;
-        case (0xBE): 
-            break;
-        case (0xBF): 
+        case (0xBE):
+            {
+                uint8_t val = memory->read(hl);
+                cp(&a, val);
+                break;
+            }
+        case (0xBF):
+            cp(&a, a);
             break;
         case (0xC0): 
             break;
@@ -744,7 +766,7 @@ void CPU::sbc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
     *dst = result;
 }
 
-void CPU::i_and(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
+void CPU::i_and(uint8_t *dst, uint8_t value){ 
     std::cout << "bitwise AND with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
     uint16_t fullResult = *dst & value;
     uint8_t result = (uint8_t)fullResult;
@@ -757,7 +779,7 @@ void CPU::i_and(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
     *dst = result;
 }
 
-void CPU::i_xor(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
+void CPU::i_xor(uint8_t *dst, uint8_t value){ 
     std::cout << "bitwise XOR with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
     uint16_t fullResult = *dst ^ value;
     uint8_t result = (uint8_t)fullResult;
@@ -768,4 +790,29 @@ void CPU::i_xor(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
     resetFlags<RegisterFlags::CARRY_FLAG>();
 
     *dst = result;
+}
+
+void CPU::i_or(uint8_t *dst, uint8_t value){ 
+    std::cout << "bitwise XOR with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
+    uint16_t fullResult = *dst | value;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
+    resetFlags<RegisterFlags::HALF_CARRY_FLAG>();
+    resetFlags<RegisterFlags::CARRY_FLAG>();
+
+    *dst = result;
+}
+
+//dont update dst, just check dst-value to see what flags would get set
+void CPU::cp(uint8_t *dst, uint8_t value){  
+    std::cout << "CP with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
+    uint16_t fullResult = *dst - value;
+    uint8_t result = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
+    forceSetFlags<RegisterFlags::SUBTRACT_FLAG>();
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
+    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
 }

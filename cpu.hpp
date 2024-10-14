@@ -37,6 +37,8 @@ class CPU{
         void sbc(uint8_t *dst, uint8_t value);
         void i_and(uint8_t *dst, uint8_t value);
         void i_xor(uint8_t *dst, uint8_t value);
+        void i_or(uint8_t *dst, uint8_t value);
+        void cp(uint8_t *dst, uint8_t value);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
