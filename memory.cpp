@@ -34,3 +34,7 @@ Memory::Memory(){
     m_Rom[0xFFFF] = 0x00 ;
 }
 
+uint8_t Memory::read(uint16_t addr){
+    return m_Rom[addr];
+}
+

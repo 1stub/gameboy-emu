@@ -1,6 +1,8 @@
 #ifndef CPU_HPP
 #define CPU_HPP
 
+#include "memory.hpp"
+
 #include <cstdint>
 #include <iostream>
 #include <assert.h>
@@ -23,6 +25,9 @@ class CPU{
         void setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult); 
         template<RegisterFlags flag>
         void resetFlags();
+        template<RegisterFlags flag>
+        void forceSetFlags();
+
         uint8_t read(uint16_t addr);
         
         //instructions
@@ -30,12 +35,13 @@ class CPU{
         void adc(uint8_t *dst, uint8_t value);
         void sub(uint8_t *dst, uint8_t value);
         void sbc(uint8_t *dst, uint8_t value);
+        void i_and(uint8_t *dst, uint8_t value);
+        void i_xor(uint8_t *dst, uint8_t value);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
-        uint8_t memory[0xFFFF]; //roms are 256kb 
-
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
+        Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags
         struct {
             union {
