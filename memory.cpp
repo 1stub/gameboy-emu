@@ -34,6 +34,28 @@ Memory::Memory(){
     m_Rom[0xFFFF] = 0x00 ;
 }
 
+//may need to modify for usage with raw pointer for addr, not sure yet.
+void Memory::write(uint16_t addr, uint8_t data){
+    if(addr < 0x8000){ //do nothing, this is ROM
+    }
+
+    //here we write to ECHO ram, so it needs to be reflected in RAM
+    else if(addr >= 0xE000 && addr <= 0xFE00){
+        m_Rom[addr] = data;
+        write(addr - 0x2000, data);
+    }
+
+    //restricted, dont do anything if write here occurs
+    else if(addr >= 0xFEA0 && addr < 0xFEFF){
+    
+    }
+
+    //now we ehausted all cases of invalid memory writing, so only areas left are fine to write to.
+    else{
+        m_Rom[addr] = data;
+    }
+}
+
 uint8_t Memory::read(uint16_t addr){
     return m_Rom[addr];
 }
