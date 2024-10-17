@@ -16,7 +16,7 @@ int main(){
     static bool wasError = false;
     
     std::string directory = "./sm83/v1/";
-    for(int i = 0x80; i <= 0xBF; i++){
+    for(int i = 0x40; i <= 0xBF; i++){
         if(wasError) break;
         std::stringstream ss;
         ss << std::hex << std::setw(2) << std::setfill('0') << i << ".json";

@@ -150,133 +150,294 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0x3F): 
             break;
-        case (0x40): 
+        case 0x40: 
+            ld(&b, b);
+            update(1, 4);
             break;
-        case (0x41): 
+        case 0x41: 
+            ld(&b, c);
+            update(1, 4);
             break;
-        case (0x42): 
+        case 0x42: 
+            ld(&b, d);
+            update(1, 4);
             break;
-        case (0x43): 
+        case 0x43: 
+            ld(&b, e);
+            update(1, 4);
             break;
-        case (0x44): 
+        case 0x44: 
+            ld(&b, h);
+            update(1, 4);
             break;
-        case (0x45): 
+        case 0x45: 
+            ld(&b, l);
+            update(1, 4);
             break;
-        case (0x46): 
+        case 0x46: {
+            uint8_t val = memory->read(hl);
+            ld(&b, val);
+            update(1, 8);
             break;
-        case (0x47): 
+        }
+        case 0x47: 
+            ld(&b, a);
+            update(1, 4);
             break;
-        case (0x48):
+
+        case 0x48: 
+            ld(&c, b);
+            update(1, 4);
             break;
-        case (0x49): 
+        case 0x49: 
+            ld(&c, c);
+            update(1, 4);
             break;
-        case (0x4A): 
+        case 0x4A: 
+            ld(&c, d);
+            update(1, 4);
             break;
-        case (0x4B): 
+        case 0x4B: 
+            ld(&c, e);
+            update(1, 4);
             break;
-        case (0x4C): 
+        case 0x4C: 
+            ld(&c, h);
+            update(1, 4);
             break;
-        case (0x4D): 
+        case 0x4D: 
+            ld(&c, l);
+            update(1, 4);
             break;
-        case (0x4E): 
+        case 0x4E: {
+            uint8_t val = memory->read(hl);
+            ld(&c, val);
+            update(1, 8);
             break;
-        case (0x4F): 
+        }
+        case 0x4F: 
+            ld(&c, a);
+            update(1, 4);
             break;
-        case (0x50): 
+        case 0x50: 
+            ld(&d, b);
+            update(1, 4);
             break;
-        case (0x51): 
+        case 0x51: 
+            ld(&d, c);
+            update(1, 4);
             break;
-        case (0x52): 
+        case 0x52: 
+            ld(&d, d);
+            update(1, 4);
             break;
-        case (0x53): 
+        case 0x53: 
+            ld(&d, e);
+            update(1, 4);
             break;
-        case (0x54): 
+        case 0x54: 
+            ld(&d, h);
+            update(1, 4);
             break;
-        case (0x55): 
+        case 0x55: 
+            ld(&d, l);
+            update(1, 4);
             break;
-        case (0x56): 
+        case 0x56: {
+            uint8_t val = memory->read(hl);
+            ld(&d, val);
+            update(1, 8);
             break;
-        case (0x57): 
+        }
+        case 0x57: 
+            ld(&d, a);
+            update(1, 4);
             break;
-        case (0x58):
+
+        case 0x58: 
+            ld(&e, b);
+            update(1, 4);
             break;
-        case (0x59): 
+        case 0x59: 
+            ld(&e, c);
+            update(1, 4);
             break;
-        case (0x5A): 
+        case 0x5A: 
+            ld(&e, d);
+            update(1, 4);
             break;
-        case (0x5B): 
+        case 0x5B: 
+            ld(&e, e);
+            update(1, 4);
             break;
-        case (0x5C): 
+        case 0x5C: 
+            ld(&e, h);
+            update(1, 4);
             break;
-        case (0x5D): 
+        case 0x5D: 
+            ld(&e, l);
+            update(1, 4);
             break;
-        case (0x5E): 
+        case 0x5E: {
+            uint8_t val = memory->read(hl);
+            ld(&e, val);
+            update(1, 8);
             break;
-        case (0x5F): 
+        }
+        case 0x5F: 
+            ld(&e, a);
+            update(1, 4);
             break;
-        case (0x60): 
+        case 0x60: 
+            ld(&h, b);
+            update(1, 4);
             break;
-        case (0x61): 
+        case 0x61: 
+            ld(&h, c);
+            update(1, 4);
             break;
-        case (0x62): 
+        case 0x62: 
+            ld(&h, d);
+            update(1, 4);
             break;
-        case (0x63): 
+        case 0x63: 
+            ld(&h, e);
+            update(1, 4);
             break;
-        case (0x64): 
+        case 0x64: 
+            ld(&h, h);
+            update(1, 4);
             break;
-        case (0x65): 
+        case 0x65: 
+            ld(&h, l);
+            update(1, 4);
             break;
-        case (0x66): 
+        case 0x66: {
+            uint8_t val = memory->read(hl);
+            ld(&h, val);
+            update(1, 8);
             break;
-        case (0x67): 
+        }
+        case 0x67: 
+            ld(&h, a);
+            update(1, 4);
             break;
-        case (0x68):
+
+        case 0x68: 
+            ld(&l, b);
+            update(1, 4);
             break;
-        case (0x69): 
+        case 0x69: 
+            ld(&l, c);
+            update(1, 4);
             break;
-        case (0x6A): 
+        case 0x6A: 
+            ld(&l, d);
+            update(1, 4);
             break;
-        case (0x6B): 
+        case 0x6B: 
+            ld(&l, e);
+            update(1, 4);
             break;
-        case (0x6C): 
+        case 0x6C: 
+            ld(&l, h);
+            update(1, 4);
             break;
-        case (0x6D): 
+        case 0x6D: 
+            ld(&l, l);
+            update(1, 4);
             break;
-        case (0x6E): 
+        case 0x6E: {
+            uint8_t val = memory->read(hl);
+            ld(&l, val);
+            update(1, 8);
             break;
-        case (0x6F): 
+        }
+        case 0x6F: 
+            ld(&l, a);
+            update(1, 4);
             break;
-        case (0x70): 
+        case 0x70: {
+            uint8_t val = b;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x71): 
+        }
+        case 0x71: {
+            uint8_t val = c;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x72): 
+        }
+        case 0x72: {
+            uint8_t val = d;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x73): 
+        }
+        case 0x73: {
+            uint8_t val = e;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x74): 
+        }
+        case 0x74: {
+            uint8_t val = h;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x75): 
+        }
+        case 0x75: {
+            uint8_t val = l;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x76): 
+        }
+        case 0x76: 
+            // HALT implementation will go here in the future
+            
+            update(1, 4);
             break;
-        case (0x77): 
+        case 0x77: {
+            uint8_t val = a;
+            memory->write(hl, val);
+            update(1, 8);
             break;
-        case (0x78):
+        }
+
+        case 0x78: 
+            ld(&a, b);
+            update(1, 4);
             break;
-        case (0x79): 
+        case 0x79: 
+            ld(&a, c);
+            update(1, 4);
             break;
-        case (0x7A): 
+        case 0x7A: 
+            ld(&a, d);
+            update(1, 4);
             break;
-        case (0x7B): 
+        case 0x7B: 
+            ld(&a, e);
+            update(1, 4);
             break;
-        case (0x7C): 
+        case 0x7C: 
+            ld(&a, h);
+            update(1, 4);
             break;
-        case (0x7D): 
+        case 0x7D: 
+            ld(&a, l);
+            update(1, 4);
             break;
-        case (0x7E): 
+        case 0x7E: {
+            uint8_t val = memory->read(hl);
+            ld(&a, val);
+            update(1, 8);
             break;
-        case (0x7F): 
+        }
+        case 0x7F: 
+            ld(&a, a);
+            update(1, 4);
             break;
         case (0x80): 
             //need to update pc and cycles every instruction call, format in docs is pc cycles         
@@ -910,4 +1071,9 @@ void CPU::cp(uint8_t *dst, uint8_t value) {
 
     setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+}
+
+void CPU::ld(uint8_t *dst, uint8_t value){
+    *dst = value;
+    //no flag setting necessary
 }
