@@ -4,10 +4,11 @@
 #include "memory.hpp"
 
 #include <cstdint>
+#include <vector>
 #include <iostream>
 #include <assert.h>
 
-enum class RegisterFlags : uint8_t{
+enum class RegisterFlags{
     ZERO_FLAG = (1 << 7),
     SUBTRACT_FLAG = (1 << 6),
     HALF_CARRY_FLAG = (1 << 5),
@@ -21,6 +22,8 @@ class CPU{
         uint16_t execute(uint8_t opcode); //we need to return the next instruction pc points to 
         void printRegisters();
         void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l);
+        std::vector<uint8_t> getRegisters() const;
+        bool compareRegisters(const std::vector<uint8_t>& expected);
         template<RegisterFlags f>
         void setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult); 
         template<RegisterFlags flag>
@@ -43,6 +46,7 @@ class CPU{
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
+        bool ime; //enable/disable intererupts
         Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags
         struct {
