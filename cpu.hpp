@@ -18,12 +18,15 @@ enum class RegisterFlags{
 //emulation of Sharp LR35902 8bit cpu
 class CPU{
     public:
-        CPU();
-        uint16_t execute(uint8_t opcode); //we need to return the next instruction pc points to 
+        CPU(Memory* mem);
+        void run(); //handles the entire fetch, decode, execute cycle
+        void execute(uint8_t opcode); //we need to return the next instruction pc points to 
+        void update(uint8_t pc_inc, uint8_t cycles_inc);
         void printRegisters();
-        void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l);
+        void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l, uint16_t _pc, uint16_t _sp);
         std::vector<uint8_t> getRegisters() const;
         bool compareRegisters(const std::vector<uint8_t>& expected);
+        
         template<RegisterFlags f>
         void setFlags(const bool setOrReset); 
 
@@ -42,6 +45,7 @@ class CPU{
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
+        uint64_t cycles; //keep track of how many cycles for instructions
         bool ime; //enable/disable intererupts
         Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags

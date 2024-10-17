@@ -7,8 +7,9 @@
 using json = nlohmann::json;
 
 int main(){
-    CPU cpu;
-    std::ifstream f("./cpu_instrs/80.json");
+    Memory* memory = new Memory(); 
+    CPU cpu(memory);
+    std::ifstream f("./GameboyCPUTests/v2/80.json");
    
     json data = json::parse(f);
 
@@ -27,7 +28,10 @@ int main(){
         expected.push_back(test["final"]["f"]);
         expected.push_back(test["final"]["h"]);
         expected.push_back(test["final"]["l"]);
-        
+        expected.push_back(test["final"]["pc"]);
+       
+        uint16_t programCounter = test["initial"]["pc"].get<uint16_t>();
+
         cpu.setRegisters(
             test["initial"]["a"], 
             test["initial"]["b"], 
@@ -36,14 +40,23 @@ int main(){
             test["initial"]["e"], 
             test["initial"]["f"], 
             test["initial"]["h"], 
-            test["initial"]["l"]
+            test["initial"]["l"],
+            programCounter - 1,
+            test["initial"]["sp"]
         );
-       
-        cpu.execute(0x80);
 
+        for(const auto& addr : test["initial"]["ram"]){ //populate memory
+            uint16_t address = addr[0].get<uint16_t>();
+            uint8_t value = addr[1].get<uint8_t>();
+            memory->m_Rom[address] = value;
+        }
+       
+        cpu.run();
         cpu.compareRegisters(expected);
+
    }
 
+    free(memory);
     return 0;
 }
 

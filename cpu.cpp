@@ -3,7 +3,8 @@
 //need to implement some very basic logic to load opcodes from external source into memory, then simulate using pc to load and modify values
 //looks like using blarg tests will be best here
 
-CPU::CPU(){
+CPU::CPU(Memory* mem){
+    memory = mem;
     a=b=c=d=e=f=h=l=0x0;
     af = 0x01B0;
     bc = 0x0013;
@@ -13,7 +14,13 @@ CPU::CPU(){
     sp = 0xFFFE; 
 }
 
-uint16_t CPU::execute(uint8_t opcode){
+void CPU::run(){ 
+    uint8_t opcode = memory->read(pc);
+    std::cout << std::hex << (int)opcode << std::endl;
+    execute(opcode);
+}
+
+void CPU::execute(uint8_t opcode){
     switch(opcode){
         case (0x00): 
             break;
@@ -271,58 +278,68 @@ uint16_t CPU::execute(uint8_t opcode){
             break;
         case (0x7F): 
             break;
-        case (0x80): //ADD A, B
-            add(&a, b); 
+        case (0x80): 
+            //need to update pc and cycles every instruction call, format in docs is pc cycles         
+            //i.e. for 0x80 we see 1 4
+            add(&a, b);
+            update(1, 4); //update pc+=1, cycles+=4; 
             break;
-        case (0x81): //ADD A, C
+        case (0x81): 
             add(&a, c);
+            update(1, 4);
             break;
-        case (0x82): //ADD A, D
+        case (0x82): 
             add(&a, d);
+            update(1, 4);
             break;
-        case (0x83): //ADD A, E
+        case (0x83): 
             add(&a, e);
+            update(1, 4);
             break;
-        case (0x84): //ADD A, H
+        case (0x84): 
             add(&a, h);
+            update(1, 4);
             break;
-        case (0x85): //ADD A, L
+        case (0x85): 
             add(&a, l);
+            update(1, 4);
             break;
-        case (0x86): //ADD A, *HL
+        case (0x86): 
             {
                 uint8_t val = memory->read(hl);
                 add(&a, val);
+                update(1, 8);
                 break;
             }
-        case (0x87): //ADD A, A
+        case (0x87): 
             add(&a, a);
+            update(1, 4);
             break;
         case (0x88):
             adc(&a, b);
             break;
-        case (0x89): //ADD A, C
+        case (0x89): 
             adc(&a, c);
             break;
-        case (0x8A): //ADD A, D
+        case (0x8A): 
             adc(&a, d);
             break;
-        case (0x8B): //ADD A, E
+        case (0x8B): 
             adc(&a, e);
             break;
-        case (0x8C): //ADD A, H
+        case (0x8C): 
             adc(&a, h);
             break;
-        case (0x8D): //ADD A, L
+        case (0x8D): 
             adc(&a, l);
             break;
-        case (0x8E): //ADD A, *HL
+        case (0x8E): 
             {
                 uint8_t val = memory->read(hl);
                 adc(&a, val);
                 break;
             }
-        case (0x8F): //ADD A, A
+        case (0x8F): 
             adc(&a, a);
             break;
         case (0x90): 
@@ -617,8 +634,11 @@ uint16_t CPU::execute(uint8_t opcode){
             break;
         default:  break;
     };
-    std::cout << "a: " << std::hex << (int)a << std::endl;
-    return pc++;
+}
+
+void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
+    pc+=pc_inc;
+    cycles+=cycles_inc;
 }
 
 void CPU::printRegisters(){
@@ -638,7 +658,7 @@ void CPU::printRegisters(){
     std::cout << "SP: " << std::hex << (int)sp << std::endl;
 }
 
-void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l) { //just using to debug
+void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l, uint16_t _pc, uint16_t _sp) { //just using to debug
     a = _a;
     b = _b;
     c = _c;
@@ -647,6 +667,7 @@ void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _
     f = _f;
     h = _h;
     l = _l;
+    pc = _pc;
 }
 
 std::vector<uint8_t> CPU::getRegisters() const {
