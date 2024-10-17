@@ -712,97 +712,128 @@ bool CPU::compareRegisters(const std::vector<uint8_t>& expected) {
 }
 
 template<RegisterFlags flag>
-void CPU::setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult){
-    if (flag == RegisterFlags::ZERO_FLAG && !(result & 0xFF)){
-        f |= (uint8_t)RegisterFlags::ZERO_FLAG;
-        //std::cout << "F just after zero: " << std::hex << (int)f << std::endl;
+void CPU::setFlags(const bool setOrReset){
+    if (flag == RegisterFlags::ZERO_FLAG){
+        setOrReset ? f |= (uint8_t)RegisterFlags::ZERO_FLAG : f &= ~(uint8_t)RegisterFlags::ZERO_FLAG;
     }
     
-    if (flag == RegisterFlags::SUBTRACT_FLAG){
-        f |= (uint8_t)RegisterFlags::SUBTRACT_FLAG;
-        //std::cout << "F just after subtract flag: " << std::hex << (int)f << std::endl;
+    if (flag == RegisterFlags::SUBTRACT_FLAG){ 
+        setOrReset ? f |= (uint8_t)RegisterFlags::SUBTRACT_FLAG : f &= ~(uint8_t)RegisterFlags::SUBTRACT_FLAG;
     }
     
-    if (flag == RegisterFlags::CARRY_FLAG && (fullResult > 0xFF)){
-        std::cout << fullResult << std::endl;
-        f |= (uint8_t)RegisterFlags::CARRY_FLAG;
-        //std::cout << "F just after carry: " << std::hex << (int)f << std::endl;
+    if (flag == RegisterFlags::CARRY_FLAG){ 
+        setOrReset ? f |= (uint8_t)RegisterFlags::CARRY_FLAG : f &= ~(uint8_t)RegisterFlags::CARRY_FLAG;
     }
     
     //we set half carry if operation on low 4 order bits exceeds 15 
-    if (flag == RegisterFlags::HALF_CARRY_FLAG && (((*dst & 0xF) + (val & 0xF)) & 0x10)){
-        f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG;
-        //std::cout << "F just after half carry: " << std::hex << (int)f << std::endl;
+    if (flag == RegisterFlags::HALF_CARRY_FLAG ){ 
+        setOrReset ? f |= (uint8_t)RegisterFlags::HALF_CARRY_FLAG : f &= ~(uint8_t)RegisterFlags::HALF_CARRY_FLAG;
     }
 }
 
-template<RegisterFlags flag>
-void CPU::resetFlags(){
-    if(flag == RegisterFlags::ZERO_FLAG){
-        f &= ~((uint8_t)RegisterFlags::ZERO_FLAG);
-    }
-    
-    if(flag == RegisterFlags::SUBTRACT_FLAG){
-        f &= ~((uint8_t)RegisterFlags::SUBTRACT_FLAG);
-    }
-    
-    if(flag == RegisterFlags::CARRY_FLAG){ 
-        f &= ~((uint8_t)RegisterFlags::CARRY_FLAG);
-    }
-    
-    if(flag == RegisterFlags::HALF_CARRY_FLAG){
-        f &= ~((uint8_t)RegisterFlags::HALF_CARRY_FLAG);
-    }
-}
-
-template<RegisterFlags flag>
-void CPU::forceSetFlags(){
-    if(flag == RegisterFlags::ZERO_FLAG){
-        f |= ((uint8_t)RegisterFlags::ZERO_FLAG);
-    }
-    
-    if(flag == RegisterFlags::SUBTRACT_FLAG){
-        f |= ((uint8_t)RegisterFlags::SUBTRACT_FLAG);
-    }
-    
-    if(flag == RegisterFlags::CARRY_FLAG){ 
-        f |= ((uint8_t)RegisterFlags::CARRY_FLAG);
-    }
-    
-    if(flag == RegisterFlags::HALF_CARRY_FLAG){
-        f |= ((uint8_t)RegisterFlags::HALF_CARRY_FLAG);
-    }
-}
 
 //this works for 0x80. always need to reset flags if it doesnt need to be set to 1
-//would be better to do this all from one call tbh.
 void CPU::add(uint8_t *dst, uint8_t value){
     std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
     
     uint16_t fullResult = *dst + value;
-
-    if(fullResult > 0xFF){
-        forceSetFlags<RegisterFlags::CARRY_FLAG>(); 
-    }else{
-        resetFlags<RegisterFlags::CARRY_FLAG>();
-    }
-    if(((*dst & 0x0F) + (value & 0x0F)) > 0x0F){
-        forceSetFlags<RegisterFlags::HALF_CARRY_FLAG>();
-    }else{
-        resetFlags<RegisterFlags::HALF_CARRY_FLAG>();
-    }
-
+    
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) + (value & 0x0F)) > 0x0F);
     *dst = fullResult;
 
-    if(*dst == 0){
-        forceSetFlags<RegisterFlags::ZERO_FLAG>();
-    }else{
-        resetFlags<RegisterFlags::ZERO_FLAG>();
-    }
-    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
 }
 
-void CPU::adc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
+void CPU::adc(uint8_t *dst, uint8_t value) {
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
+
+    uint16_t fullResult = *dst + value + carryBitSet;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) + (value & 0x0F) + carryBitSet) > 0x0F);
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::sub(uint8_t *dst, uint8_t value) {
+    std::cout << "Subtracting " << (int)value << " from " << (int)(*dst) << std::endl;
+
+    uint16_t fullResult = *dst - value;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::sbc(uint8_t *dst, uint8_t value) {
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    std::cout << "carry bit set: " << (int)carryBitSet << std::endl;
+
+    uint16_t fullResult = *dst - value - carryBitSet;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < ((value & 0x0F) + carryBitSet)));
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::i_and(uint8_t *dst, uint8_t value) {
+    std::cout << "Bitwise AND with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
+    uint16_t fullResult = *dst & value;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(true);
+    setFlags<RegisterFlags::CARRY_FLAG>(false);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::i_xor(uint8_t *dst, uint8_t value) {
+    std::cout << "Bitwise XOR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
+    uint16_t fullResult = *dst ^ value;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(false);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::i_or(uint8_t *dst, uint8_t value) {
+    std::cout << "Bitwise OR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
+    uint16_t fullResult = *dst | value;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(false);
+
+    *dst = (uint8_t)fullResult;
+}
+
+void CPU::cp(uint8_t *dst, uint8_t value) {
+    std::cout << "CP with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
+    uint16_t fullResult = *dst - value;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+}
+
+/*void CPU::adc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
     std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
     uint16_t fullResult = *dst + value + carryBitSet;
@@ -893,4 +924,4 @@ void CPU::cp(uint8_t *dst, uint8_t value){
     forceSetFlags<RegisterFlags::SUBTRACT_FLAG>();
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
     setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
-}
+}*/

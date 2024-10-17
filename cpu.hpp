@@ -25,11 +25,7 @@ class CPU{
         std::vector<uint8_t> getRegisters() const;
         bool compareRegisters(const std::vector<uint8_t>& expected);
         template<RegisterFlags f>
-        void setFlags(uint8_t *dst, uint8_t val, uint8_t result, uint16_t fullResult); 
-        template<RegisterFlags flag>
-        void resetFlags();
-        template<RegisterFlags flag>
-        void forceSetFlags();
+        void setFlags(const bool setOrReset); 
 
         uint8_t read(uint16_t addr);
         
