@@ -317,192 +317,248 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0x88):
             adc(&a, b);
+            update(1, 4);
             break;
         case (0x89): 
             adc(&a, c);
+            update(1, 4);
             break;
         case (0x8A): 
             adc(&a, d);
+            update(1, 4);
             break;
         case (0x8B): 
             adc(&a, e);
+            update(1, 4);
             break;
         case (0x8C): 
             adc(&a, h);
+            update(1, 4);
             break;
         case (0x8D): 
             adc(&a, l);
+            update(1, 4);
             break;
         case (0x8E): 
             {
                 uint8_t val = memory->read(hl);
                 adc(&a, val);
+                update(1, 8);
                 break;
             }
         case (0x8F): 
             adc(&a, a);
+            update(1, 4);
             break;
         case (0x90): 
             sub(&a, b);
+            update(1, 4);
             break;
         case (0x91): 
             sub(&a, c);
+            update(1, 4);
             break;
         case (0x92): 
             sub(&a, d);
+            update(1, 4);
             break;
         case (0x93): 
             sub(&a, e);
+            update(1, 4);
             break;
         case (0x94): 
             sub(&a, h);
+            update(1, 4);
             break;
         case (0x95): 
             sub(&a, l);
+            update(1, 4);
             break;
         case (0x96): 
             {
                 uint8_t val = memory->read(hl);
+                update(1, 8);
                 sub(&a, val);
                 break;
             }
         case (0x97): 
             sub(&a, a);
+            update(1, 4);
             break;
         case (0x98):
             sbc(&a, b);
+            update(1, 4);
             break;
         case (0x99): 
             sbc(&a, c);
+            update(1, 4);
             break;
         case (0x9A): 
             sbc(&a, d);
+            update(1, 4);
             break;
         case (0x9B): 
             sbc(&a, e);
+            update(1, 4);
             break;
         case (0x9C): 
             sbc(&a, h);
+            update(1, 4);
             break;
         case (0x9D): 
-            sbc(&a, l);
+            sbc(&a, l); 
+            update(1, 4);
             break;
         case (0x9E): 
             {
                 uint8_t val = memory->read(hl);
+                update(1, 8);
                 sbc(&a, val);
                 break;
             }
         case (0x9F): 
             sbc(&a, a);
+            update(1, 4);
             break;
         case (0xA0):
             i_and(&a, b);
+            update(1, 4);
             break;
         case (0xA1): 
             i_and(&a, c);
+            update(1, 4);
             break;
         case (0xA2): 
             i_and(&a, d);
+            update(1, 4);
             break;
         case (0xA3): 
             i_and(&a, e);
+            update(1, 4);
             break;
         case (0xA4): 
             i_and(&a, h);
+            update(1, 4);
             break;
         case (0xA5): 
             i_and(&a, l);
+            update(1, 4);
             break;
         case (0xA6): 
             {
                 uint8_t val = memory->read(hl);
+                update(1, 8);
                 i_and(&a, val);
                 break;
             }
         case (0xA7):
             i_and(&a, a);
+            update(1, 4);
             break;
         case (0xA8):
             i_xor(&a, b);
+            update(1, 4);
             break;
         case (0xA9): 
             i_xor(&a, c);
+            update(1, 4);
             break;
         case (0xAA): 
             i_xor(&a, d);
+            update(1, 4);
             break;
         case (0xAB): 
             i_xor(&a, e);
+            update(1, 4);
             break;
         case (0xAC): 
             i_xor(&a, h);
+            update(1, 4);
             break;
         case (0xAD): 
             i_xor(&a, l);
+            update(1, 4);
             break;
         case (0xAE): 
             {
                 uint8_t val = memory->read(hl);
+                update(1, 8);
                 i_xor(&a, val);
                 break;
             }
         case (0xAF): 
             i_xor(&a, a);
+            update(1, 4);
             break;
         case (0xB0):
             i_or(&a, b);
+            update(1, 4);
             break;
         case (0xB1): 
             i_or(&a, c);
+            update(1, 4);
             break;
         case (0xB2):
             i_or(&a, d);
+            update(1, 4);
             break;
         case (0xB3):
             i_or(&a, e);
+            update(1, 4);
             break;
         case (0xB4):
             i_or(&a, h);
+            update(1, 4);
             break;
         case (0xB5):
             i_or(&a, l);
+            update(1, 4);
             break;
         case (0xB6):
             {
                 uint8_t val = memory->read(hl);
                 i_or(&a, val);
+                update(1, 8);
                 break;
             }
         case (0xB7):
             i_or(&a, a);
+            update(1, 4);
             break;
         case (0xB8):
             cp(&a, b);
+            update(1, 4);
             break;
         case (0xB9): 
             cp(&a, c);
+            update(1, 4);
             break;
         case (0xBA):
             cp(&a, d);
+            update(1, 4);
             break;
         case (0xBB): 
             cp(&a, e);
+            update(1, 4);
             break;
         case (0xBC): 
             cp(&a, h);
+            update(1, 4);
             break;
         case (0xBD):
             cp(&a, l);
+            update(1, 4);
             break;
         case (0xBE):
             {
                 uint8_t val = memory->read(hl);
                 cp(&a, val);
+                update(1, 8);
                 break;
             }
         case (0xBF):
             cp(&a, a);
+            update(1, 4);
             break;
         case (0xC0): 
             break;
@@ -685,7 +741,7 @@ std::vector<uint8_t> CPU::getRegisters() const {
     return regs;
 }
 
-bool CPU::compareRegisters(const std::vector<uint8_t>& expected) {
+bool CPU::compareRegisters(const std::vector<uint16_t>& expected) {
     bool success = true;
 
     if ((int)a != expected[0]) {
@@ -726,6 +782,12 @@ bool CPU::compareRegisters(const std::vector<uint8_t>& expected) {
     if ((int)l != expected[7]) {
         std::cout << "Mismatch in register L. Expected: " << std::hex << (int)expected[7] 
                   << ", Got: " << (int)l << std::endl;
+        success = false;
+    }
+    if ((int)pc != expected[8]) {
+        std::cout << std::hex << (int)pc << std::endl;
+        std::cout << "Mismatch in PC. Expected: " << std::hex << (int)expected[8] 
+                  << ", Got: " << (int)pc << std::endl;
         success = false;
     }
 
@@ -773,12 +835,13 @@ void CPU::adc(uint8_t *dst, uint8_t value) {
 
     uint16_t fullResult = *dst + value + carryBitSet;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) + (value & 0x0F) + carryBitSet) > 0x0F);
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
-
     *dst = (uint8_t)fullResult;
+    
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
 }
 
 void CPU::sub(uint8_t *dst, uint8_t value) {
@@ -786,12 +849,12 @@ void CPU::sub(uint8_t *dst, uint8_t value) {
 
     uint16_t fullResult = *dst - value;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
-
     *dst = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
 
 void CPU::sbc(uint8_t *dst, uint8_t value) {
@@ -800,149 +863,51 @@ void CPU::sbc(uint8_t *dst, uint8_t value) {
 
     uint16_t fullResult = *dst - value - carryBitSet;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < ((value & 0x0F) + carryBitSet)));
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
-
     *dst = (uint8_t)fullResult;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
 
 void CPU::i_and(uint8_t *dst, uint8_t value) {
     std::cout << "Bitwise AND with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
-    uint16_t fullResult = *dst & value;
+    *dst &= value;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(true);
     setFlags<RegisterFlags::CARRY_FLAG>(false);
-
-    *dst = (uint8_t)fullResult;
 }
 
 void CPU::i_xor(uint8_t *dst, uint8_t value) {
     std::cout << "Bitwise XOR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
-    uint16_t fullResult = *dst ^ value;
+    *dst ^= value;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
     setFlags<RegisterFlags::CARRY_FLAG>(false);
-
-    *dst = (uint8_t)fullResult;
 }
 
 void CPU::i_or(uint8_t *dst, uint8_t value) {
     std::cout << "Bitwise OR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
-    uint16_t fullResult = *dst | value;
+    *dst |= value;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
     setFlags<RegisterFlags::CARRY_FLAG>(false);
-
-    *dst = (uint8_t)fullResult;
 }
 
 void CPU::cp(uint8_t *dst, uint8_t value) {
     std::cout << "CP with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
     uint16_t fullResult = *dst - value;
 
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
-
-/*void CPU::adc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
-    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
-    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
-    uint16_t fullResult = *dst + value + carryBitSet;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
-
-    *dst += value + carryBitSet;
-}
-
-void CPU::sub(uint8_t *dst, uint8_t value){
-    std::cout << "subtracting " << (int)value << " from " << (int)(*dst) << std::endl;
-    
-    uint16_t fullResult = *dst - value;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult); 
-
-    *dst = result;
-}
-
-void CPU::sbc(uint8_t *dst, uint8_t value){ //if carry is set we add extra 1
-    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
-    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
-    uint16_t fullResult = *dst - value - carryBitSet;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::SUBTRACT_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
-
-    *dst = result;
-}
-
-void CPU::i_and(uint8_t *dst, uint8_t value){ 
-    std::cout << "bitwise AND with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
-    uint16_t fullResult = *dst & value;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
-    forceSetFlags<RegisterFlags::HALF_CARRY_FLAG>();
-    resetFlags<RegisterFlags::CARRY_FLAG>();
-
-    *dst = result;
-}
-
-void CPU::i_xor(uint8_t *dst, uint8_t value){ 
-    std::cout << "bitwise XOR with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
-    uint16_t fullResult = *dst ^ value;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
-    forceSetFlags<RegisterFlags::HALF_CARRY_FLAG>();
-    resetFlags<RegisterFlags::CARRY_FLAG>();
-
-    *dst = result;
-}
-
-void CPU::i_or(uint8_t *dst, uint8_t value){ 
-    std::cout << "bitwise XOR with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
-    uint16_t fullResult = *dst | value;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    resetFlags<RegisterFlags::SUBTRACT_FLAG>();
-    resetFlags<RegisterFlags::HALF_CARRY_FLAG>();
-    resetFlags<RegisterFlags::CARRY_FLAG>();
-
-    *dst = result;
-}
-
-//dont update dst, just check dst-value to see what flags would get set
-void CPU::cp(uint8_t *dst, uint8_t value){  
-    std::cout << "CP with: " << std::hex << (int)*dst << " && "<< (int)value << std::endl; 
-    uint16_t fullResult = *dst - value;
-    uint8_t result = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(dst, value, result, fullResult);
-    forceSetFlags<RegisterFlags::SUBTRACT_FLAG>();
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(dst, value, result, fullResult);
-    setFlags<RegisterFlags::CARRY_FLAG>(dst, value, result, fullResult);
-}*/
