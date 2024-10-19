@@ -1,9 +1,9 @@
 #include "memory.hpp"
 
 Memory::Memory(){
-    m_Rom[0xFF05] = 0x00 ;
-    m_Rom[0xFF06] = 0x00 ;
-    m_Rom[0xFF07] = 0x00 ;
+    m_Rom[0xFF05] = 0x00 ; //Timer Counter (TIMA)
+    m_Rom[0xFF06] = 0x00 ; //Timer Modulo (TMA)
+    m_Rom[0xFF07] = 0x00 ; //Timer Control (TAC)
     m_Rom[0xFF10] = 0x80 ;
     m_Rom[0xFF11] = 0xBF ;
     m_Rom[0xFF12] = 0xF3 ;
@@ -48,6 +48,10 @@ void Memory::write(uint16_t addr, uint8_t data){
     //restricted, dont do anything if write here occurs
     else if(addr >= 0xFEA0 && addr < 0xFEFF){
     
+    }
+    
+    else if(addr == 0xFFFF){
+        //cpu enable register, used with HALT
     }
 
     //now we ehausted all cases of invalid memory writing, so only areas left are fine to write to.

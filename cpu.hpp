@@ -42,7 +42,7 @@ class CPU{
         void i_or(uint8_t *dst, uint8_t value);
         void cp(uint8_t *dst, uint8_t value);
         void ld(uint8_t *dst, uint8_t value);
-
+        void jrnc();
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter

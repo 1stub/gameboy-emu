@@ -118,7 +118,9 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0x2F): 
             break;
-        case (0x30): 
+        case (0x30):
+            //not sure abt this, i think jrnc is conditional
+            jrnc();
             break;
         case (0x31): 
             break;
@@ -1076,4 +1078,15 @@ void CPU::cp(uint8_t *dst, uint8_t value) {
 void CPU::ld(uint8_t *dst, uint8_t value){
     *dst = value;
     //no flag setting necessary
+}
+
+//if carry flag unset, 8 bit value d is added to the pc
+//we check value stored at pc+1 and treat as a SIGNED int
+void CPU::jrnc(){ 
+    if(!(f & (uint8_t)RegisterFlags::CARRY_FLAG)){
+        pc += (int8_t)memory->read(pc + 1);
+        update(2,12);
+    }else{
+        update(2,12);
+    }
 }
