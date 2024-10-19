@@ -12,7 +12,8 @@ enum class RegisterFlags{
     ZERO_FLAG = (1 << 7),
     SUBTRACT_FLAG = (1 << 6),
     HALF_CARRY_FLAG = (1 << 5),
-    CARRY_FLAG = (1 << 4)
+    CARRY_FLAG = (1 << 4),
+    NO_FLAG
 };
 
 //emulation of Sharp LR35902 8bit cpu
@@ -42,7 +43,12 @@ class CPU{
         void i_or(uint8_t *dst, uint8_t value);
         void cp(uint8_t *dst, uint8_t value);
         void ld(uint8_t *dst, uint8_t value);
-        void jrnc();
+        template<RegisterFlags flag>
+        void jr(bool n, bool bypass);
+
+        uint8_t extended_execute(uint8_t opcode);\
+        void rlc(uint8_t *reg);
+        void rlc(uint16_t *reg);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
