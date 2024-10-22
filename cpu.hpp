@@ -43,8 +43,11 @@ class CPU{
         void i_or(uint8_t *dst, uint8_t value);
         void cp(uint8_t *dst, uint8_t value);
         void ld(uint8_t *dst, uint8_t value);
+        void ld(uint16_t *dst, uint16_t value);
         template<RegisterFlags flag>
         void jr(bool n, bool bypass);
+        template<RegisterFlags flag>
+        void jr16(bool n);
 
         uint8_t extended_execute(uint8_t opcode);\
         void rlc(uint8_t *reg);

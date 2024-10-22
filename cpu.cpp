@@ -22,9 +22,17 @@ void CPU::run(){
 
 void CPU::execute(uint8_t opcode){
     switch(opcode){
-        case (0x00): 
+        case (0x00):
+            update(1,4);
             break;
-        case (0x01): 
+        case (0x01):
+            {
+                uint8_t c_upd = memory->read(pc+1);
+                uint8_t b_upd = memory->read(pc+2);
+                ld(&b,b_upd);
+                ld(&c, c_upd);
+                update(3,12);
+            }
             break;
         case (0x02): 
             break;
@@ -56,7 +64,14 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0x10): 
             break;
-        case (0x11): 
+        case (0x11):
+            {
+                uint8_t e_upd = memory->read(pc+1);
+                uint8_t d_upd = memory->read(pc+2);
+                ld(&e,e_upd);
+                ld(&d, d_upd);
+                update(3,12);
+            }
             break;
         case (0x12): 
             break;
@@ -90,7 +105,14 @@ void CPU::execute(uint8_t opcode){
         case (0x20):
             jr<RegisterFlags::ZERO_FLAG>(false, false);
             break;
-        case (0x21): 
+        case (0x21):
+            {
+                uint8_t l_upd = memory->read(pc+1);
+                uint8_t h_upd = memory->read(pc+2);
+                ld(&l,l_upd);
+                ld(&h, h_upd);
+                update(3,12);
+            }
             break;
         case (0x22): 
             break;
@@ -124,7 +146,16 @@ void CPU::execute(uint8_t opcode){
         case (0x30):
             jr<RegisterFlags::CARRY_FLAG>(false, false);
             break;
-        case (0x31): 
+        case (0x31):
+            {
+                uint8_t first_val = memory->read(pc+1);
+                uint8_t second_val = memory->read(pc+2);
+                uint16_t concat = 0;
+                concat |= first_val;
+                concat |= (second_val << 8);
+                ld(&sp, concat);
+                update(3,12);
+            }
             break;
         case (0x32): 
             break;
@@ -730,7 +761,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xC1): 
             break;
-        case (0xC2): 
+        case (0xC2):
+            jr16<RegisterFlags::ZERO_FLAG>(false);
             break;
         case (0xC3): 
             break;
@@ -746,7 +778,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xC9): 
             break;
-        case (0xCA): 
+        case (0xCA):
+            jr16<RegisterFlags::ZERO_FLAG>(true);
             break;
         case (0xCB):
             //pc always +=2, cycles varry
@@ -764,7 +797,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xD1): 
             break;
-        case (0xD2): 
+        case (0xD2):
+            jr16<RegisterFlags::CARRY_FLAG>(false);
             break;
         case (0xD3): 
             break;
@@ -780,7 +814,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xD9): 
             break;
-        case (0xDA): 
+        case (0xDA):
+            jr16<RegisterFlags::CARRY_FLAG>(true);
             break;
         case (0xDB): 
             break;
@@ -892,6 +927,7 @@ void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _
     h = _h;
     l = _l;
     pc = _pc;
+    sp = _sp;
 }
 
 std::vector<uint8_t> CPU::getRegisters() const {
@@ -956,6 +992,12 @@ bool CPU::compareRegisters(const std::vector<uint16_t>& expected) {
         std::cout << std::hex << (int)pc << std::endl;
         std::cout << "Mismatch in PC. Expected: " << std::hex << (int)expected[8] 
                   << ", Got: " << (int)pc << std::endl;
+        success = false;
+    }
+    if ((int)sp != expected[9]) {
+        std::cout << std::hex << (int)pc << std::endl;
+        std::cout << "Mismatch in SP. Expected: " << std::hex << (int)expected[9] 
+                  << ", Got: " << (int)sp << std::endl;
         success = false;
     }
 
@@ -1085,10 +1127,15 @@ void CPU::ld(uint8_t *dst, uint8_t value){
     //no flag setting necessary
 }
 
+void CPU::ld(uint16_t *dst, uint16_t value){
+    *dst = value;
+    //no flag setting necessary
+}
+
 //if carry flag unset, 8 bit value d is added to the pc
 //we check value stored at pc+1 and treat as a SIGNED int
 template<RegisterFlags flag>
-void CPU::jr(bool n, bool bypass){
+void CPU::jr(bool n, bool bypass){ //is if we want to find nc or nz
     auto checkFlag = [this, n](RegisterFlags _flag) -> bool {
         return n ? (f & (uint8_t)_flag) : !(f & (uint8_t)_flag);  
     };
@@ -1102,6 +1149,28 @@ void CPU::jr(bool n, bool bypass){
         update(2,12);
     }else{
         update(2,8);
+    }
+}
+
+//i use this n bool here often, if it is false we are checking NC or NZ. Otherwise we 
+//check C or Z flags for true
+template<RegisterFlags flag>
+void CPU::jr16(bool n){
+    auto checkFlag = [this, n](RegisterFlags _flag) -> bool {
+        return n ? (f & (uint8_t)_flag) : !(f & (uint8_t)_flag);  
+    };
+    RegisterFlags condition = (flag == RegisterFlags::CARRY_FLAG) ? RegisterFlags::CARRY_FLAG : RegisterFlags::ZERO_FLAG;
+    
+
+    if(checkFlag(condition)){
+        uint16_t addr;
+        uint8_t lowOrder = memory->read(pc+1);
+        uint8_t highOrder = memory->read(pc+2);
+        addr = lowOrder | (highOrder << 8);
+        pc = addr; 
+        update(0,16);
+    }else{
+        update(3,12);
     }
 }
 
