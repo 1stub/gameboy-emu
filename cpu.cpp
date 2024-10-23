@@ -34,19 +34,31 @@ void CPU::execute(uint8_t opcode){
                 update(3,12);
             }
             break;
-        case (0x02): 
+        case (0x02):
+            ld(&bc, a);
+            update(1,8);
             break;
-        case (0x03): 
+        case (0x03):
+            bc++;
+            update(1,8);
             break;
-        case (0x04): 
+        case (0x04):
+            inc(&b);
+            update(1,4);
             break;
-        case (0x05): 
+        case (0x05):
+            dec(&b);
+            update(1,4);
             break;
-        case (0x06): 
+        case (0x06):
+            ld(&b, memory->read(pc+1));
+            update(2,8);
             break;
         case (0x07): 
             break;
         case (0x08):
+            ld(&pc, memory->read(sp));
+            update(3,20);
             break;
         case (0x09): 
             break;
@@ -73,15 +85,25 @@ void CPU::execute(uint8_t opcode){
                 update(3,12);
             }
             break;
-        case (0x12): 
+        case (0x12):
+            ld(&de, a);
+            update(1,8);
             break;
         case (0x13): 
+            de++;
+            update(1,8);
             break;
         case (0x14): 
+            inc(&d);
+            update(1,4);
             break;
-        case (0x15): 
+        case (0x15):
+            dec(&d);
+            update(1,4);
             break;
-        case (0x16): 
+        case (0x16):
+            ld(&d, memory->read(pc+1));
+            update(2,8);
             break;
         case (0x17): 
             break;
@@ -114,15 +136,26 @@ void CPU::execute(uint8_t opcode){
                 update(3,12);
             }
             break;
-        case (0x22): 
+        case (0x22):
+            ld(&hl, a);
+            hl++;
+            update(1,8);
             break;
         case (0x23): 
+            hl++;
+            update(1,8);
             break;
-        case (0x24): 
+        case (0x24):
+            inc(&h);
+            update(1,4);
             break;
         case (0x25): 
+            dec(&h);
+            update(1,4);
             break;
-        case (0x26): 
+        case (0x26):
+            ld(&h, memory->read(pc+1));
+            update(2,8);
             break;
         case (0x27): 
             break;
@@ -157,15 +190,26 @@ void CPU::execute(uint8_t opcode){
                 update(3,12);
             }
             break;
-        case (0x32): 
+        case (0x32):
+            ld(&hl, a);
+            hl--;
+            update(1,8);
             break;
         case (0x33): 
+            sp++;
+            update(1,8);
             break;
-        case (0x34): 
+        case (0x34):
+            inc(&hl);
+            update(1,12);
             break;
         case (0x35): 
+            dec(&hl);
+            update(1,12);
             break;
-        case (0x36): 
+        case (0x36):
+            ld(&hl, memory->read(pc+1));
+            update(2,12);
             break;
         case (0x37): 
             break;
@@ -995,7 +1039,7 @@ bool CPU::compareRegisters(const std::vector<uint16_t>& expected) {
         success = false;
     }
     if ((int)sp != expected[9]) {
-        std::cout << std::hex << (int)pc << std::endl;
+        std::cout << std::hex << (int)sp << std::endl;
         std::cout << "Mismatch in SP. Expected: " << std::hex << (int)expected[9] 
                   << ", Got: " << (int)sp << std::endl;
         success = false;
@@ -1130,6 +1174,48 @@ void CPU::ld(uint8_t *dst, uint8_t value){
 void CPU::ld(uint16_t *dst, uint16_t value){
     *dst = value;
     //no flag setting necessary
+}
+
+void CPU::ld(uint16_t *addr, uint8_t value){
+    memory->write(*addr, value);
+    //no flag setting necessary
+}
+
+void CPU::inc(uint8_t *reg){
+    uint16_t val = *reg + 1;
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*reg & 0x0F) < (0x1 & 0x0F)));
+    *reg = (uint8_t)val;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::inc(uint16_t *reg){
+    uint8_t mem_val = memory->read(*reg);
+    uint8_t val = mem_val + 1;
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((mem_val & 0x0F) == 0x0F));
+    memory->write(*reg, val);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::dec(uint8_t *reg){
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(!(*reg & 0x0F)); //carry from bit 4 into 3 if low order nibble is 0x0
+    *reg -=1 ;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+}
+
+void CPU::dec(uint16_t *reg){
+    uint8_t mem_val = memory->read(*reg);
+    uint8_t val = mem_val - 1;
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(!(mem_val & 0x0F));
+    memory->write(*reg, val);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
 
 //if carry flag unset, 8 bit value d is added to the pc

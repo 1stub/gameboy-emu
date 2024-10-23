@@ -44,6 +44,11 @@ class CPU{
         void cp(uint8_t *dst, uint8_t value);
         void ld(uint8_t *dst, uint8_t value);
         void ld(uint16_t *dst, uint16_t value);
+        void ld(uint16_t *dst, uint8_t value);
+        void inc(uint8_t *reg);
+        void inc(uint16_t *reg);
+        void dec(uint8_t *reg);
+        void dec(uint16_t *reg);
         template<RegisterFlags flag>
         void jr(bool n, bool bypass);
         template<RegisterFlags flag>

@@ -24,8 +24,8 @@ class jsonTesting{
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
-            uint8_t low = 0xDA;
-            uint8_t hi = 0xDA;
+            uint8_t low = 0x08;
+            uint8_t hi = 0x08;
             for(int i = low; i <= hi; i++){
                 if(wasError) break;
                 std::stringstream ss;
