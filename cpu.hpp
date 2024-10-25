@@ -53,15 +53,19 @@ class CPU{
         void jr(bool n, bool bypass);
         template<RegisterFlags flag>
         void jr16(bool n);
+        void daa(uint8_t *reg);
+        void scf(uint8_t *reg);
 
         uint8_t extended_execute(uint8_t opcode);\
         void rlc(uint8_t *reg);
         void rlc(uint16_t *reg);
+        void rlca(uint8_t *reg);
+        void rla(uint8_t *reg);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
-        uint64_t cycles; //keep track of how many cycles for instructions
+        uint64_t cycles; //keeps track of T Cycles
         bool ime; //enable/disable intererupts
         Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags

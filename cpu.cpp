@@ -54,7 +54,9 @@ void CPU::execute(uint8_t opcode){
             ld(&b, memory->read(pc+1));
             update(2,8);
             break;
-        case (0x07): 
+        case (0x07):
+            rlca(&a);
+            update(1,4);
             break;
         case (0x08):
             ld(&pc, memory->read(sp));
@@ -106,6 +108,8 @@ void CPU::execute(uint8_t opcode){
             update(2,8);
             break;
         case (0x17): 
+            rla(&a);
+            update(1,4);
             break;
         case (0x18):
             jr<RegisterFlags::NO_FLAG>(false, true);
@@ -157,7 +161,9 @@ void CPU::execute(uint8_t opcode){
             ld(&h, memory->read(pc+1));
             update(2,8);
             break;
-        case (0x27): 
+        case (0x27):
+            daa(&a);
+            update(1,4);
             break;
         case (0x28):
             jr<RegisterFlags::ZERO_FLAG>(true, false);
@@ -212,6 +218,8 @@ void CPU::execute(uint8_t opcode){
             update(2,12);
             break;
         case (0x37): 
+            //scf();
+            update(1,4);
             break;
         case (0x38):
             jr<RegisterFlags::CARRY_FLAG>(true, false);
@@ -1258,6 +1266,71 @@ void CPU::jr16(bool n){
     }else{
         update(3,12);
     }
+}
+
+void CPU::rlca(uint8_t *reg){
+    //carry bit does not rotate through
+    bool willCarry = *reg & (1<<7);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(false);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
+    *reg <<= 1;
+    if(willCarry) *reg += 1; //if we overflowed, we need to loop back around and set 1st bit
+}
+
+void CPU::rla(uint8_t *reg){
+    //rotate through carry flag
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    bool willCarry =  *reg & (1<<7);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(false);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
+    *reg <<= 1;
+    if(carryBitSet) *reg += 1;
+}
+
+void CPU::daa(uint8_t *reg){
+    //https://blog.ollien.com/posts/gb-daa/ 
+    //working with binary coded decimal numbers
+    //this means instead of 0-255 in a byte, we now have 0-99
+    //if half carry add 0x06
+    //if full carry add 0x60
+    //so effectively we are just updating register a based on flags and convert to BCD
+
+    uint8_t offset = 0;
+    uint8_t unconverted_reg = *reg;
+    bool should_carry = false;
+    bool half_carry = f & ((uint8_t)RegisterFlags::HALF_CARRY_FLAG);
+    bool carry = f & ((uint8_t)RegisterFlags::CARRY_FLAG);
+    bool subtract = f & ((uint8_t)RegisterFlags::SUBTRACT_FLAG);
+
+    if((subtract == 0 && ((unconverted_reg & 0x0F) > 0x09)) || half_carry == 1){
+        offset |= 0x06;
+    }
+    if((subtract == 0 && unconverted_reg > 0x99) || carry == 1){
+        offset |= 0x60;
+        should_carry = true;
+    }
+
+    *reg = subtract ? unconverted_reg - offset : unconverted_reg + offset;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(
+            (unconverted_reg > 0x99 && subtract == 0) ||
+            should_carry 
+    );
+}
+
+void CPU::scf(uint8_t *reg){
 }
 
 uint8_t CPU::extended_execute(uint8_t opcode){
