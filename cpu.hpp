@@ -60,8 +60,11 @@ class CPU{
         void scf();
         void cpl();
         void ccf();
-
-        uint8_t extended_execute(uint8_t opcode);\
+        void ret();
+        template<RegisterFlags flag>
+        void retc(bool n, bool bypass); 
+        
+        uint8_t extended_execute(uint8_t opcode);
         void rlc(uint8_t *reg);
         void rlc(uint16_t *reg);
         void rlca(uint8_t *reg);

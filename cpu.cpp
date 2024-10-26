@@ -889,9 +889,10 @@ void CPU::execute(uint8_t opcode){
             cp(&a, a);
             update(1, 4);
             break;
-        case (0xC0): 
+        case (0xC0):
+            retc<RegisterFlags::ZERO_FLAG>(false, false);
             break;
-        case (0xC1): 
+        case (0xC1):
             break;
         case (0xC2):
             jr16<RegisterFlags::ZERO_FLAG>(false);
@@ -907,8 +908,11 @@ void CPU::execute(uint8_t opcode){
         case (0xC7): 
             break;
         case (0xC8):
+            retc<RegisterFlags::ZERO_FLAG>(true, false);
             break;
-        case (0xC9): 
+        case (0xC9):
+            ret();
+            update(0,16); //pc updating handeled in ret
             break;
         case (0xCA):
             jr16<RegisterFlags::ZERO_FLAG>(true);
@@ -925,7 +929,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xCF): 
             break;
-        case (0xD0): 
+        case (0xD0):
+            retc<RegisterFlags::CARRY_FLAG>(false, false);
             break;
         case (0xD1): 
             break;
@@ -943,8 +948,12 @@ void CPU::execute(uint8_t opcode){
         case (0xD7): 
             break;
         case (0xD8):
+            retc<RegisterFlags::CARRY_FLAG>(true, false);
             break;
-        case (0xD9): 
+        case (0xD9):
+            ime = true;
+            ret();
+            update(0,16); //pc updating handeled in ret
             break;
         case (0xDA):
             jr16<RegisterFlags::CARRY_FLAG>(true);
@@ -1461,6 +1470,34 @@ void CPU::ccf(){
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
     setFlags<RegisterFlags::CARRY_FLAG>(!carryBitSet);
+}
+
+template<RegisterFlags flag>
+void CPU::retc(bool n, bool bypass){ //n is if we want to find nc or nz
+    auto checkFlag = [this, n](RegisterFlags _flag) -> bool {
+        return n ? (f & (uint8_t)_flag) : !(f & (uint8_t)_flag);  
+    };
+    RegisterFlags condition;
+    if(!bypass){
+        condition = (flag == RegisterFlags::CARRY_FLAG) ? RegisterFlags::CARRY_FLAG : RegisterFlags::ZERO_FLAG;
+    }
+
+    if(bypass || checkFlag(condition)){
+        ret();
+        update(0,20);
+    }else{
+        update(1,8);
+    }
+}
+
+void CPU::ret(){
+    uint16_t addr;
+    uint8_t low = memory->read(sp);
+    sp++;
+    uint8_t high = memory->read(sp);
+    sp++;
+    addr = low | (high << 8);
+    pc = addr;
 }
 
 uint8_t CPU::extended_execute(uint8_t opcode){
