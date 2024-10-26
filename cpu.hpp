@@ -28,7 +28,7 @@ class CPU{
         void printRegisters();
         void setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l, uint16_t _pc, uint16_t _sp);
         std::vector<uint8_t> getRegisters() const;
-        bool compareRegisters(const std::vector<uint16_t>& expected);
+        bool compareRegisters(const std::vector<uint16_t>& expected, const std::vector<std::pair<uint16_t, uint8_t>>& expectedMemory);
         
         template<RegisterFlags f>
         void setFlags(const bool setOrReset); 
@@ -55,15 +55,18 @@ class CPU{
         template<RegisterFlags flag>
         void jr(bool n, bool bypass);
         template<RegisterFlags flag>
-        void jr16(bool n);
+        void jr16(bool n, bool bypass);
         void daa(uint8_t *reg);
         void scf();
         void cpl();
         void ccf();
         void ret();
         template<RegisterFlags flag>
+        void call(bool n);
+        template<RegisterFlags flag>
         void retc(bool n, bool bypass); 
-        
+        void pop(uint16_t *reg);
+
         uint8_t extended_execute(uint8_t opcode);
         void rlc(uint8_t *reg);
         void rlc(uint16_t *reg);

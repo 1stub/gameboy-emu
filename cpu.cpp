@@ -70,9 +70,15 @@ void CPU::execute(uint8_t opcode){
             update(1,4);
             break;
         case (0x08):
-            ld(&pc, memory->read(sp));
-            update(3,20);
-            break;
+            {
+                uint16_t addr = memory->read16(pc+1); 
+                uint8_t low = sp & 0x00FF;
+                uint8_t high = sp >> 8;
+                ld(&addr, low); addr++; 
+                ld(&addr, high); 
+                update(3,20);
+                break;
+            }
         case (0x09):
             add(&hl, bc);
             update(1,8);
@@ -527,37 +533,37 @@ void CPU::execute(uint8_t opcode){
             break;
         case 0x70: {
             uint8_t val = b;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
         case 0x71: {
             uint8_t val = c;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
         case 0x72: {
             uint8_t val = d;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
         case 0x73: {
             uint8_t val = e;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
         case 0x74: {
             uint8_t val = h;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
         case 0x75: {
             uint8_t val = l;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
@@ -568,7 +574,7 @@ void CPU::execute(uint8_t opcode){
             break;
         case 0x77: {
             uint8_t val = a;
-            memory->write(hl, val);
+            memory->m_Rom[hl]=val;
             update(1, 8);
             break;
         }
@@ -893,11 +899,13 @@ void CPU::execute(uint8_t opcode){
             retc<RegisterFlags::ZERO_FLAG>(false, false);
             break;
         case (0xC1):
+            pop(&bc);
             break;
         case (0xC2):
-            jr16<RegisterFlags::ZERO_FLAG>(false);
+            jr16<RegisterFlags::ZERO_FLAG>(false, false);
             break;
-        case (0xC3): 
+        case (0xC3):
+            jr16<RegisterFlags::NO_FLAG>(true, true);
             break;
         case (0xC4): 
             break;
@@ -915,7 +923,7 @@ void CPU::execute(uint8_t opcode){
             update(0,16); //pc updating handeled in ret
             break;
         case (0xCA):
-            jr16<RegisterFlags::ZERO_FLAG>(true);
+            jr16<RegisterFlags::ZERO_FLAG>(true, false);
             break;
         case (0xCB):
             //pc always +=2, cycles varry
@@ -923,7 +931,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xCC): 
             break;
-        case (0xCD): 
+        case (0xCD):
+            call<RegisterFlags::NO_FLAG>(false);
             break;
         case (0xCE): 
             break;
@@ -932,10 +941,11 @@ void CPU::execute(uint8_t opcode){
         case (0xD0):
             retc<RegisterFlags::CARRY_FLAG>(false, false);
             break;
-        case (0xD1): 
+        case (0xD1):
+            pop(&de);
             break;
         case (0xD2):
-            jr16<RegisterFlags::CARRY_FLAG>(false);
+            jr16<RegisterFlags::CARRY_FLAG>(false, false);
             break;
         case (0xD3): 
             break;
@@ -956,7 +966,7 @@ void CPU::execute(uint8_t opcode){
             update(0,16); //pc updating handeled in ret
             break;
         case (0xDA):
-            jr16<RegisterFlags::CARRY_FLAG>(true);
+            jr16<RegisterFlags::CARRY_FLAG>(true, false);
             break;
         case (0xDB): 
             break;
@@ -970,7 +980,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xE0): 
             break;
-        case (0xE1): 
+        case (0xE1):
+            pop(&hl);
             break;
         case (0xE2): 
             break;
@@ -1002,11 +1013,14 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xF0): 
             break;
-        case (0xF1): 
+        case (0xF1):
+            pop(&af);
             break;
         case (0xF2): 
             break;
-        case (0xF3): 
+        case (0xF3):
+            ime = false;
+            update(1,4);
             break;
         case (0xF4): 
             break;
@@ -1022,7 +1036,9 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xFA): 
             break;
-        case (0xFB): 
+        case (0xFB):
+            ime = true;
+            update(1,4);
             break;
         case (0xFC): 
             break;
@@ -1081,7 +1097,7 @@ std::vector<uint8_t> CPU::getRegisters() const {
     return regs;
 }
 
-bool CPU::compareRegisters(const std::vector<uint16_t>& expected) {
+bool CPU::compareRegisters(const std::vector<uint16_t>& expected, const std::vector<std::pair<uint16_t, uint8_t>>& expectedMemory) {
     bool success = true;
 
     if ((int)a != expected[0]) {
@@ -1136,7 +1152,15 @@ bool CPU::compareRegisters(const std::vector<uint16_t>& expected) {
                   << ", Got: " << (int)sp << std::endl;
         success = false;
     }
-
+    for (const auto& [address, expectedValue] : expectedMemory) {
+        uint8_t actualValue = memory->read(address);  // Assuming m_memory->read() retrieves a byte at a given address
+        if (actualValue != expectedValue) {
+            std::cout << "Mismatch in memory at address 0x" << std::hex << address
+                      << ". Expected: 0x" << (int)expectedValue 
+                      << ", Got: 0x" << (int)actualValue << std::endl;
+            success = false;
+        }
+    }
     return success;
 }
 
@@ -1280,7 +1304,7 @@ void CPU::ld(uint16_t *dst, uint16_t value){
 }
 
 void CPU::ld(uint16_t *addr, uint8_t value){
-    memory->write(*addr, value);
+    memory->m_Rom[*addr] = value;
     //no flag setting necessary
 }
 
@@ -1296,7 +1320,7 @@ void CPU::inc(uint16_t *reg){
     uint8_t mem_val = memory->read(*reg);
     uint8_t val = mem_val + 1;
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((mem_val & 0x0F) == 0x0F));
-    memory->write(*reg, val);
+    memory->m_Rom[*reg] = val;
 
     setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
@@ -1314,7 +1338,7 @@ void CPU::dec(uint16_t *reg){
     uint8_t mem_val = memory->read(*reg);
     uint8_t val = mem_val - 1;
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(!(mem_val & 0x0F));
-    memory->write(*reg, val);
+    memory->m_Rom[*reg] = val;
 
     setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
@@ -1343,14 +1367,17 @@ void CPU::jr(bool n, bool bypass){ //is if we want to find nc or nz
 //i use this n bool here often, if it is false we are checking NC or NZ. Otherwise we 
 //check C or Z flags for true
 template<RegisterFlags flag>
-void CPU::jr16(bool n){
+void CPU::jr16(bool n, bool bypass){
     auto checkFlag = [this, n](RegisterFlags _flag) -> bool {
         return n ? (f & (uint8_t)_flag) : !(f & (uint8_t)_flag);  
     };
-    RegisterFlags condition = (flag == RegisterFlags::CARRY_FLAG) ? RegisterFlags::CARRY_FLAG : RegisterFlags::ZERO_FLAG;
+    RegisterFlags condition;
+    if(!bypass){
+        condition = (flag == RegisterFlags::CARRY_FLAG) ? RegisterFlags::CARRY_FLAG : RegisterFlags::ZERO_FLAG;
+    }
     
 
-    if(checkFlag(condition)){
+    if(bypass || checkFlag(condition)){
         uint16_t addr;
         uint8_t lowOrder = memory->read(pc+1);
         uint8_t highOrder = memory->read(pc+2);
@@ -1490,7 +1517,7 @@ void CPU::retc(bool n, bool bypass){ //n is if we want to find nc or nz
     }
 }
 
-void CPU::ret(){
+void CPU::ret(){ 
     uint16_t addr;
     uint8_t low = memory->read(sp);
     sp++;
@@ -1498,6 +1525,33 @@ void CPU::ret(){
     sp++;
     addr = low | (high << 8);
     pc = addr;
+}
+
+template<RegisterFlags flag>
+void CPU::call(bool n){
+    uint16_t addr;
+    uint8_t low = memory->read(pc+1);
+    uint8_t high = memory->read(pc+2);
+    pc+=2;
+    addr = low | (high << 8);
+    sp--;
+    memory->m_Rom[pc] = high;
+    sp--;
+    memory->m_Rom[pc] = low;
+    pc = addr;
+    update(0,24);    
+}
+
+void CPU::pop(uint16_t *reg){
+    uint16_t addr;
+    uint8_t low = memory->read(sp);
+    sp++;
+    uint8_t high = memory->read(sp);
+    sp++;
+    addr = low | (high << 8);
+    *reg = addr;
+    update(1,12);
+    f &= ~0x0F; //clear low order nibble of f
 }
 
 uint8_t CPU::extended_execute(uint8_t opcode){

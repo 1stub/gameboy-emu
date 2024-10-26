@@ -24,8 +24,8 @@ class jsonTesting{
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
-            uint8_t low = 0xD9;
-            uint8_t hi = 0xD9;
+            uint8_t low = 0x00;
+            uint8_t hi = 0xBF;
             for(int i = low; i <= hi; i++){
                 if(i == 0x10) i++;
                 if(wasError) break;
@@ -81,7 +81,15 @@ class jsonTesting{
                     for(const auto &cycle : test["cycles"]){
                         m_cpu->cycle();
                     }
-                    if(!m_cpu->compareRegisters(expected)){
+
+                    std::vector<std::pair<uint16_t, uint8_t>> expectedMemory;
+                    for (const auto& addr : test["final"]["ram"]) {
+                        uint16_t address = addr[0].get<uint16_t>();
+                        uint8_t value = addr[1].get<uint8_t>();
+                        expectedMemory.emplace_back(address, value);
+                    }
+
+                    if(!m_cpu->compareRegisters(expected, expectedMemory)){
 
                         std::cerr << "ERROR" << std::endl;
                         wasError = true;
