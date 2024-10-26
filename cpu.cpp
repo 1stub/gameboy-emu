@@ -5,6 +5,7 @@
 
 CPU::CPU(Memory* mem){
     memory = mem;
+    cycles=0;
     a=b=c=d=e=f=h=l=0x0;
     af = 0x01B0;
     bc = 0x0013;
@@ -14,10 +15,20 @@ CPU::CPU(Memory* mem){
     sp = 0xFFFE; 
 }
 
-void CPU::run(){ 
+void CPU::cycle(){
+    if (ticks < static_cast<int>(cycles)) {
+        ticks++;
+        return;
+    }
+    ticks = 0;
     uint8_t opcode = memory->read(pc);
     std::cout << std::hex << (int)opcode << std::endl;
     execute(opcode);
+}
+
+void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
+    pc += pc_inc;
+    cycles = cycles_inc;
 }
 
 void CPU::execute(uint8_t opcode){
@@ -62,21 +73,37 @@ void CPU::execute(uint8_t opcode){
             ld(&pc, memory->read(sp));
             update(3,20);
             break;
-        case (0x09): 
+        case (0x09):
+            add(&hl, bc);
+            update(1,8);
             break;
-        case (0x0A): 
+        case (0x0A):
+            {
+                ld(&a, memory->read(bc));
+                update(1,8);
+                break;
+            }
+        case (0x0B):
+            bc--;
+            update(1,8);
             break;
-        case (0x0B): 
-            break;
-        case (0x0C): 
+        case (0x0C):
+            inc(&c);
+            update(1,4);
             break;
         case (0x0D): 
+            dec(&c);
+            update(1,4);
             break;
-        case (0x0E): 
+        case (0x0E):
+            ld(&c, memory->read(pc+1));
+            update(2,8);
             break;
-        case (0x0F): 
+        case (0x0F):
+            rrca(&a);
+            update(1,4);
             break;
-        case (0x10): 
+        case (0x10): //ignoring STOP for now
             break;
         case (0x11):
             {
@@ -114,19 +141,36 @@ void CPU::execute(uint8_t opcode){
         case (0x18):
             jr<RegisterFlags::NO_FLAG>(false, true);
             break;
-        case (0x19): 
+        case (0x19):
+            add(&hl, de);
+            update(1,8);
             break;
-        case (0x1A): 
+        case (0x1A):
+            {
+                ld(&a, memory->read(de));
+                update(1,8);
+                break;
+            }
             break;
-        case (0x1B): 
+        case (0x1B):
+            de--;
+            update(1,8);
             break;
-        case (0x1C): 
+        case (0x1C):
+            inc(&e);
+            update(1,4);
             break;
         case (0x1D): 
+            dec(&e);
+            update(1,4);
             break;
-        case (0x1E): 
+        case (0x1E):
+            ld(&e, memory->read(pc+1));
+            update(2,8);
             break;
-        case (0x1F): 
+        case (0x1F):
+            rra(&a);
+            update(1,4);
             break;
         case (0x20):
             jr<RegisterFlags::ZERO_FLAG>(false, false);
@@ -168,19 +212,37 @@ void CPU::execute(uint8_t opcode){
         case (0x28):
             jr<RegisterFlags::ZERO_FLAG>(true, false);
             break;
-        case (0x29): 
+        case (0x29):
+            add(&hl, hl);
+            update(1,8);
             break;
-        case (0x2A): 
+        case (0x2A):
+            {
+                ld(&a, memory->read(hl));
+                hl++;
+                update(1,8);
+                break;
+            }
             break;
-        case (0x2B): 
+        case (0x2B):
+            hl--;
+            update(1,8);
             break;
         case (0x2C): 
+            inc(&l);
+            update(1,4);
             break;
         case (0x2D): 
+            dec(&l);
+            update(1,4);
             break;
-        case (0x2E): 
+        case (0x2E):
+            ld(&l, memory->read(pc+1));
+            update(2,8);
             break;
-        case (0x2F): 
+        case (0x2F):
+            cpl();
+            update(1,4);
             break;
         case (0x30):
             jr<RegisterFlags::CARRY_FLAG>(false, false);
@@ -218,25 +280,43 @@ void CPU::execute(uint8_t opcode){
             update(2,12);
             break;
         case (0x37): 
-            //scf();
+            scf();
             update(1,4);
             break;
         case (0x38):
             jr<RegisterFlags::CARRY_FLAG>(true, false);
             break;
-        case (0x39): 
+        case (0x39):
+            add(&hl, sp);
+            update(1,8);
             break;
         case (0x3A): 
+            {
+                ld(&a, memory->read(hl));
+                hl--;
+                update(1,8);
+                break;
+            }
             break;
-        case (0x3B): 
+        case (0x3B):
+            sp--;
+            update(1,8);
             break;
-        case (0x3C): 
+        case (0x3C):
+            inc(&a);
+            update(1,4);
             break;
-        case (0x3D): 
+        case (0x3D):
+            dec(&a);
+            update(1,4);
             break;
-        case (0x3E): 
+        case (0x3E):
+            ld(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0x3F): 
+            ccf();
+            update(1,4);
             break;
         case 0x40: 
             ld(&b, b);
@@ -947,11 +1027,6 @@ void CPU::execute(uint8_t opcode){
     };
 }
 
-void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
-    pc+=pc_inc;
-    cycles+=cycles_inc;
-}
-
 void CPU::printRegisters(){
     std::cout << "A: " << std::hex << (int)a << std::endl;
     std::cout << "B: " << std::hex << (int)b << std::endl;
@@ -1076,8 +1151,6 @@ void CPU::setFlags(const bool setOrReset){
     }
 }
 
-
-//this works for 0x80. always need to reset flags if it doesnt need to be set to 1
 void CPU::add(uint8_t *dst, uint8_t value){
     std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
     
@@ -1088,6 +1161,19 @@ void CPU::add(uint8_t *dst, uint8_t value){
     *dst = fullResult;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::add(uint16_t *dst, uint16_t value){
+    std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
+    
+    uint32_t fullResult = *dst + value;
+    
+    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFFFF);
+    //we are checking for overflow from bit 11 rather than 3 since 16 bit values
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0FFF) + (value & 0x0FFF)) > 0x0FFF);
+    *dst = (uint16_t)fullResult;
+
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
 }
 
@@ -1190,9 +1276,8 @@ void CPU::ld(uint16_t *addr, uint8_t value){
 }
 
 void CPU::inc(uint8_t *reg){
-    uint16_t val = *reg + 1;
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*reg & 0x0F) < (0x1 & 0x0F)));
-    *reg = (uint8_t)val;
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*reg & 0x0F)+(1&0x0F))&0x10);
+    *reg += 1;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
@@ -1282,6 +1367,35 @@ void CPU::rlca(uint8_t *reg){
     if(willCarry) *reg += 1; //if we overflowed, we need to loop back around and set 1st bit
 }
 
+void CPU::rrca(uint8_t *reg){
+    //carry bit does not rotate through
+    bool willCarry = *reg & (0x01);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(false);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
+    *reg >>= 1;
+    if(willCarry) *reg |= (1<<7);
+}
+
+void CPU::rra(uint8_t *reg){
+    //carry bit does rotate through 
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    bool willCarry = *reg & (0x01);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(false);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
+    *reg >>= 1;
+    if(carryBitSet) *reg |= (1<<7);
+}
+
 void CPU::rla(uint8_t *reg){
     //rotate through carry flag
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
@@ -1330,7 +1444,23 @@ void CPU::daa(uint8_t *reg){
     );
 }
 
-void CPU::scf(uint8_t *reg){
+void CPU::scf(){
+   setFlags<RegisterFlags::CARRY_FLAG>(true);
+   setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+   setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::cpl(){
+    a = ~a;
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(true);
+}
+
+void CPU::ccf(){ 
+    bool carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? true : false;
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(!carryBitSet);
 }
 
 uint8_t CPU::extended_execute(uint8_t opcode){

@@ -20,7 +20,9 @@ enum class RegisterFlags{
 class CPU{
     public:
         CPU(Memory* mem);
-        void run(); //handles the entire fetch, decode, execute cycle
+        int ticks = 0;
+        uint64_t cycles; //keeps track of T Cycles
+        void cycle(); //handles the entire fetch, decode, execute cycle
         void execute(uint8_t opcode); //we need to return the next instruction pc points to 
         void update(uint8_t pc_inc, uint8_t cycles_inc);
         void printRegisters();
@@ -34,7 +36,8 @@ class CPU{
         uint8_t read(uint16_t addr);
         
         //instructions
-        void add(uint8_t *dst, uint8_t value); 
+        void add(uint8_t *dst, uint8_t value);
+        void add(uint16_t *dst, uint16_t value); 
         void adc(uint8_t *dst, uint8_t value);
         void sub(uint8_t *dst, uint8_t value);
         void sbc(uint8_t *dst, uint8_t value);
@@ -54,18 +57,21 @@ class CPU{
         template<RegisterFlags flag>
         void jr16(bool n);
         void daa(uint8_t *reg);
-        void scf(uint8_t *reg);
+        void scf();
+        void cpl();
+        void ccf();
 
         uint8_t extended_execute(uint8_t opcode);\
         void rlc(uint8_t *reg);
         void rlc(uint16_t *reg);
         void rlca(uint8_t *reg);
         void rla(uint8_t *reg);
+        void rrca(uint8_t *reg);
+        void rra(uint8_t *reg);
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
-        uint64_t cycles; //keeps track of T Cycles
         bool ime; //enable/disable intererupts
         Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags

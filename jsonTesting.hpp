@@ -24,9 +24,10 @@ class jsonTesting{
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
-            uint8_t low = 0x27;
-            uint8_t hi = 0x27;
+            uint8_t low = 0x00;
+            uint8_t hi = 0xBF;
             for(int i = low; i <= hi; i++){
+                if(i == 0x10) i++;
                 if(wasError) break;
                 std::stringstream ss;
                 ss << std::hex << std::setw(2) << std::setfill('0') << i << ".json";
@@ -42,6 +43,8 @@ class jsonTesting{
                 json data = json::parse(f);
                 
                 for(const auto& test : data){
+                    m_cpu->ticks = 0;
+                    m_cpu->cycles = 0;
                     if(wasError) break;
                     std::vector<uint16_t> expected;
                     expected.push_back(test["final"]["a"]);
@@ -75,18 +78,15 @@ class jsonTesting{
                         //since we are not running a rom we need to modify data that would otherwise be restricted
                         m_memory->m_Rom[address] = value;
                     }
-                    for(const auto& cycle : test["cycles"]){
-                        std::string rwMode = cycle[2];
-
-                        if(rwMode == "r-m")
-                    
-                        m_cpu->run();
-                        if(!m_cpu->compareRegisters(expected)){
-                            std::cerr << "ERROR" << std::endl;
-                            wasError = true;
-                        }
-                        if(wasError) break;
+                    for(const auto &cycle : test["cycles"]){
+                        m_cpu->cycle();
                     }
+                    if(!m_cpu->compareRegisters(expected)){
+
+                        std::cerr << "ERROR" << std::endl;
+                        wasError = true;
+                    }
+                    if(wasError) break;
                 }
             }
             return wasError;
