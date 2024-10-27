@@ -24,10 +24,11 @@ class jsonTesting{
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
-            uint8_t low = 0x00;
-            uint8_t hi = 0xBF;
+            uint8_t low = 0xC0;
+            uint8_t hi = 0xFF;
             for(int i = low; i <= hi; i++){
                 if(i == 0x10) i++;
+                if(i == 0xCB) i++;
                 if(wasError) break;
                 std::stringstream ss;
                 ss << std::hex << std::setw(2) << std::setfill('0') << i << ".json";
@@ -36,7 +37,7 @@ class jsonTesting{
                 fs::path filePath = directory + filename;
                 if(!fs::exists(filePath)){
                     std::cerr << "Failed to open " << filename << std::endl;
-                    break;
+                    continue;
                 }
                 
                 std::ifstream f(filePath);

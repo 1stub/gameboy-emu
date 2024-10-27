@@ -61,11 +61,13 @@ class CPU{
         void cpl();
         void ccf();
         void ret();
+        void rst(uint8_t n);
         template<RegisterFlags flag>
-        void call(bool n);
+        void call(bool n, bool bypass);
         template<RegisterFlags flag>
         void retc(bool n, bool bypass); 
         void pop(uint16_t *reg);
+        void push(uint16_t *reg);
 
         uint8_t extended_execute(uint8_t opcode);
         void rlc(uint8_t *reg);

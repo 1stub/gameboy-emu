@@ -907,13 +907,18 @@ void CPU::execute(uint8_t opcode){
         case (0xC3):
             jr16<RegisterFlags::NO_FLAG>(true, true);
             break;
-        case (0xC4): 
+        case (0xC4):
+            call<RegisterFlags::ZERO_FLAG>(false, false);
             break;
-        case (0xC5): 
+        case (0xC5):
+            push(&bc);
             break;
-        case (0xC6): 
+        case (0xC6):
+            add(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0xC7): 
+            rst(0x00); 
             break;
         case (0xC8):
             retc<RegisterFlags::ZERO_FLAG>(true, false);
@@ -929,14 +934,18 @@ void CPU::execute(uint8_t opcode){
             //pc always +=2, cycles varry
             update(2, extended_execute(memory->read(pc+1)));
             break;
-        case (0xCC): 
+        case (0xCC):
+            call<RegisterFlags::ZERO_FLAG>(true, false);
             break;
         case (0xCD):
-            call<RegisterFlags::NO_FLAG>(false);
+            call<RegisterFlags::NO_FLAG>(false, true);
             break;
-        case (0xCE): 
+        case (0xCE):
+            adc(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0xCF): 
+            rst(0x08);
             break;
         case (0xD0):
             retc<RegisterFlags::CARRY_FLAG>(false, false);
@@ -947,15 +956,20 @@ void CPU::execute(uint8_t opcode){
         case (0xD2):
             jr16<RegisterFlags::CARRY_FLAG>(false, false);
             break;
-        case (0xD3): 
+        case (0xD3):
             break;
-        case (0xD4): 
+        case (0xD4):
+            call<RegisterFlags::CARRY_FLAG>(false, false);
             break;
-        case (0xD5): 
+        case (0xD5):
+            push(&de);
             break;
-        case (0xD6): 
+        case (0xD6):
+            sub(&a, memory->read(pc+1));
+            update(2,8);
             break;
-        case (0xD7): 
+        case (0xD7):
+            rst(0x10);
             break;
         case (0xD8):
             retc<RegisterFlags::CARRY_FLAG>(true, false);
@@ -970,32 +984,58 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xDB): 
             break;
-        case (0xDC): 
+        case (0xDC):
+            call<RegisterFlags::CARRY_FLAG>(true, false);
             break;
         case (0xDD): 
             break;
-        case (0xDE): 
+        case (0xDE):
+            sbc(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0xDF): 
+            rst(0x18);
             break;
-        case (0xE0): 
+        case (0xE0):
+            memory->m_Rom[0xFF00+memory->read(pc+1)] = a;
+            update(2,12);
             break;
         case (0xE1):
             pop(&hl);
             break;
         case (0xE2): 
+            memory->m_Rom[0xFF00 + c] = a;
+            update(1,8);
             break;
         case (0xE3): 
             break;
         case (0xE4): 
             break;
         case (0xE5): 
+            push(&hl);
             break;
         case (0xE6): 
+            i_and(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0xE7): 
+            rst(0x20);
             break;
-        case (0xE8):
+        case (0xE8):{ //its pretty stupid to handle the logic here - didnt want to make a new function
+                int8_t val = memory->read(pc+1);
+                setFlags<RegisterFlags::ZERO_FLAG>(false);
+                setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+                if (val >= 0) {
+                    setFlags<RegisterFlags::CARRY_FLAG>((sp + val) > 0xFFFF);
+                    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0FFF) + (val & 0x0FFF)) > 0x0FFF);
+                } else {
+                    // Adjust for negative values, check if borrowing occurs
+                    setFlags<RegisterFlags::CARRY_FLAG>((sp + val) > 0xFFFF);
+                    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0FFF) + (val & 0x0FFF)) <= 0x0FFF);
+                }
+                sp += val;    
+                update(2,16);
+            }
             break;
         case (0xE9): 
             break;
@@ -1008,15 +1048,20 @@ void CPU::execute(uint8_t opcode){
         case (0xED): 
             break;
         case (0xEE): 
+            i_xor(&a, memory->read(pc+1));
+            pc++;
             break;
         case (0xEF): 
+            rst(0x28);
             break;
         case (0xF0): 
             break;
         case (0xF1):
             pop(&af);
             break;
-        case (0xF2): 
+        case (0xF2):
+            a = memory->read(c);
+            update(1,8);
             break;
         case (0xF3):
             ime = false;
@@ -1025,10 +1070,13 @@ void CPU::execute(uint8_t opcode){
         case (0xF4): 
             break;
         case (0xF5): 
+            push(&af);
             break;
         case (0xF6): 
+            i_or(&a, memory->read(pc+1));
             break;
         case (0xF7): 
+            rst(0x30);
             break;
         case (0xF8):
             break;
@@ -1045,8 +1093,11 @@ void CPU::execute(uint8_t opcode){
         case (0xFD): 
             break;
         case (0xFE): 
+            cp(&a, memory->read(pc+1));
+            pc++;
             break;
         case (0xFF): 
+            rst(0x38);
             break;
         default:  break;
     };
@@ -1528,18 +1579,38 @@ void CPU::ret(){
 }
 
 template<RegisterFlags flag>
-void CPU::call(bool n){
-    uint16_t addr;
-    uint8_t low = memory->read(pc+1);
-    uint8_t high = memory->read(pc+2);
-    pc+=2;
-    addr = low | (high << 8);
+void CPU::call(bool n, bool bypass){
+    auto checkFlag = [this, n](RegisterFlags _flag) -> bool {
+        return n ? (f & (uint8_t)_flag) : !(f & (uint8_t)_flag);  
+    };
+    RegisterFlags condition;
+    if(!bypass){
+        condition = (flag == RegisterFlags::CARRY_FLAG) ? RegisterFlags::CARRY_FLAG : RegisterFlags::ZERO_FLAG;
+    }
+    if(bypass || checkFlag(condition)){
+        uint16_t addr = memory->read(pc + 1) | (memory->read(pc + 2) << 8);
+
+        sp--;
+        memory->m_Rom[sp] = ((pc + 3) >> 8);   // Push high byte of PC
+        sp--;
+        memory->m_Rom[sp] = ((pc + 3) & 0x00FF); // Push low byte of PC
+
+        pc = addr;
+        update(0, 24);
+    }else update(3,12);
+}
+
+void CPU::rst(uint8_t n){
+    uint16_t addr = n | (0x00 << 8);
+
+    pc++;
     sp--;
-    memory->m_Rom[pc] = high;
+    memory->m_Rom[sp] = (pc >> 8);   // Push high byte of PC
     sp--;
-    memory->m_Rom[pc] = low;
+    memory->m_Rom[sp] = (pc & 0x00FF); // Push low byte of PC
+
     pc = addr;
-    update(0,24);    
+    update(0, 16);
 }
 
 void CPU::pop(uint16_t *reg){
@@ -1552,6 +1623,14 @@ void CPU::pop(uint16_t *reg){
     *reg = addr;
     update(1,12);
     f &= ~0x0F; //clear low order nibble of f
+}
+
+void CPU::push(uint16_t *reg){
+    sp--;
+    memory->m_Rom[sp] = (*reg >> 8);
+    sp--;
+    memory->m_Rom[sp] = (*reg & 0x00FF);
+    update(1,16);
 }
 
 uint8_t CPU::extended_execute(uint8_t opcode){
