@@ -1025,22 +1025,26 @@ void CPU::execute(uint8_t opcode){
                 int8_t val = memory->read(pc+1);
                 setFlags<RegisterFlags::ZERO_FLAG>(false);
                 setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
-                if (val >= 0) {
-                    setFlags<RegisterFlags::CARRY_FLAG>((sp + val) > 0xFFFF);
-                    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0FFF) + (val & 0x0FFF)) > 0x0FFF);
-                } else {
-                    // Adjust for negative values, check if borrowing occurs
-                    setFlags<RegisterFlags::CARRY_FLAG>((sp + val) > 0xFFFF);
-                    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0FFF) + (val & 0x0FFF)) <= 0x0FFF);
-                }
+                setFlags<RegisterFlags::CARRY_FLAG>(((sp&0xFF) + (val&0xFF)) > 0xFF);
+                setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0F) + (val & 0x0F)) > 0x0F);
+
                 sp += val;    
                 update(2,16);
             }
             break;
-        case (0xE9): 
+        case (0xE9): //TODO NEXT! 
+            pc=hl;
+            update(0,4);
             break;
-        case (0xEA): 
-            break;
+        case (0xEA):
+            {
+                uint8_t low = memory->read(pc+1);
+                uint8_t high = memory->read(pc+2); 
+                uint16_t addr = low | (high << 8); 
+                memory->m_Rom[addr] = a;
+                update(3,16);
+                break;
+            }
         case (0xEB): 
             break;
         case (0xEC): 
@@ -1049,20 +1053,27 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xEE): 
             i_xor(&a, memory->read(pc+1));
-            pc++;
+            update(2,8);
             break;
         case (0xEF): 
             rst(0x28);
             break;
-        case (0xF0): 
-            break;
+        case (0xF0):
+            {
+                uint16_t n = memory->read(pc+1);
+                a = memory->read(0xFF00 + n);
+                update(2,12);
+                break;
+            }
         case (0xF1):
             pop(&af);
             break;
         case (0xF2):
-            a = memory->read(c);
-            update(1,8);
-            break;
+            {
+                a = memory->read(0xFF00+c);
+                update(1,8);
+                break;
+            }
         case (0xF3):
             ime = false;
             update(1,4);
@@ -1074,16 +1085,35 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xF6): 
             i_or(&a, memory->read(pc+1));
+            update(2,8);
             break;
         case (0xF7): 
             rst(0x30);
             break;
         case (0xF8):
+            {
+                int8_t val = memory->read(pc+1);
+                hl = sp + val;
+                setFlags<RegisterFlags::ZERO_FLAG>(false);
+                setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+                setFlags<RegisterFlags::CARRY_FLAG>(((sp&0xFF) + (val&0xFF)) > 0xFF);
+                setFlags<RegisterFlags::HALF_CARRY_FLAG>(((sp & 0x0F) + (val & 0x0F)) > 0x0F);
+                update(2,12);
+                break;
+            }
+        case (0xF9):
+            ld(&sp,hl);
+            update(1,8);
             break;
-        case (0xF9): 
-            break;
-        case (0xFA): 
-            break;
+        case (0xFA):
+            {
+                uint8_t low = memory->read(pc+1);
+                uint8_t high = memory->read(pc+2); 
+                uint16_t addr = low | (high << 8); 
+                a = memory->read(addr);
+                update(3,16);
+                break;
+            }
         case (0xFB):
             ime = true;
             update(1,4);
@@ -1094,7 +1124,7 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xFE): 
             cp(&a, memory->read(pc+1));
-            pc++;
+            update(2,8);
             break;
         case (0xFF): 
             rst(0x38);
