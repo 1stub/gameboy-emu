@@ -932,7 +932,8 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xCB):
             //pc always +=2, cycles varry
-            update(2, extended_execute(memory->read(pc+1)));
+            extended_execute(memory->read(pc));
+            update(1,4);
             break;
         case (0xCC):
             call<RegisterFlags::ZERO_FLAG>(true, false);
@@ -1663,8 +1664,7 @@ void CPU::push(uint16_t *reg){
     update(1,16);
 }
 
-uint8_t CPU::extended_execute(uint8_t opcode){
-    int nCycles = 0;
+void CPU::extended_execute(uint8_t opcode){
     switch(opcode){
         case (0x00): 
             rlc(&b);
@@ -1679,49 +1679,58 @@ uint8_t CPU::extended_execute(uint8_t opcode){
             update(2, 8);
             break;
         case (0x03): 
-            rlc(&b);
+            rlc(&e);
             update(2, 8);
             break;
         case (0x04): 
-            rlc(&b);
+            rlc(&h);
             update(2, 8);
             break;
         case (0x05): 
-            rlc(&b);
+            rlc(&l);
             update(2, 8);
             break;
-        case (0x06): 
-            rlc(&b);
-            update(2, 8);
-            break;
+        case (0x06):
+            {
+                uint8_t val = memory->read(hl);
+                rlc(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
         case (0x07):
             rlc(&a);
             update(2, 8);
             break;
         case (0x08):
-            {
-                rlc(&hl);
-                update(2, 16);
-                break;
-            }
+            rrca(&b);
+            update(2,8);
             break;
         case (0x09): 
-
+            rrca(&c);
+            update(2,8);
             break;
         case (0x0A): 
-
+            rrca(&d);
+            update(2,8);
             break;
         case (0x0B): 
-
+            rrca(&e);
+            update(2,8);
             break;
         case (0x0C): 
-            
+            rrca(&h);
+            update(2,8);
             break;
         case (0x0D): 
+            rrca(&l);
+            update(2,8);
             break;
         case (0x0E): 
+            update(2,8);
             break;
         case (0x0F): 
+            update(2,8);
             break;
         case (0x10): 
             break;
@@ -2205,7 +2214,6 @@ uint8_t CPU::extended_execute(uint8_t opcode){
             break;
         default:  break;
     };
-    return nCycles;
 }
 
 void CPU::rlc(uint8_t *reg){

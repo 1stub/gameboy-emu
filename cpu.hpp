@@ -69,7 +69,7 @@ class CPU{
         void pop(uint16_t *reg);
         void push(uint16_t *reg);
 
-        uint8_t extended_execute(uint8_t opcode);
+        void extended_execute(uint8_t opcode);
         void rlc(uint8_t *reg);
         void rlc(uint16_t *reg);
         void rlca(uint8_t *reg);
