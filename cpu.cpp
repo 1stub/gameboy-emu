@@ -22,7 +22,6 @@ void CPU::cycle(){
     }
     ticks = 0;
     uint8_t opcode = memory->read(pc);
-    std::cout << std::hex << (int)opcode << std::endl;
     execute(opcode);
 }
 
@@ -110,6 +109,7 @@ void CPU::execute(uint8_t opcode){
             update(1,4);
             break;
         case (0x10): //ignoring STOP for now
+            update(2,4);
             break;
         case (0x11):
             {
@@ -931,9 +931,9 @@ void CPU::execute(uint8_t opcode){
             jr16<RegisterFlags::ZERO_FLAG>(true, false);
             break;
         case (0xCB):
-            //pc always +=2, cycles varry
-            extended_execute(memory->read(pc));
-            update(1,4);
+            //we run our extended execution on the next value in memory (it would be an opcode)
+            extended_execute(memory->read(pc+1));
+            update(0,4);
             break;
         case (0xCC):
             call<RegisterFlags::ZERO_FLAG>(true, false);
@@ -1703,50 +1703,76 @@ void CPU::extended_execute(uint8_t opcode){
             update(2, 8);
             break;
         case (0x08):
-            rrca(&b);
+            rrc(&b);
             update(2,8);
             break;
         case (0x09): 
-            rrca(&c);
+            rrc(&c);
             update(2,8);
             break;
         case (0x0A): 
-            rrca(&d);
+            rrc(&d);
             update(2,8);
             break;
         case (0x0B): 
-            rrca(&e);
+            rrc(&e);
             update(2,8);
             break;
         case (0x0C): 
-            rrca(&h);
+            rrc(&h);
             update(2,8);
             break;
         case (0x0D): 
-            rrca(&l);
+            rrc(&l);
             update(2,8);
             break;
         case (0x0E): 
+            {
+                uint8_t val = memory->read(hl);
+                rrc(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x0F):
+            rrc(&a);
             update(2,8);
             break;
-        case (0x0F): 
-            update(2,8);
+        case (0x10):
+            rla(&b);
+            update(2, 8);
             break;
-        case (0x10): 
+        case (0x11):
+            rla(&c);
+            update(2, 8);
             break;
-        case (0x11): 
+        case (0x12):
+            rla(&d);
+            update(2, 8);
             break;
-        case (0x12): 
+        case (0x13):
+            rla(&e);
+            update(2, 8);
             break;
-        case (0x13): 
+        case (0x14):
+            rla(&h);
+            update(2, 8);
             break;
-        case (0x14): 
+        case (0x15):
+            rla(&l);
+            update(2, 8);
             break;
-        case (0x15): 
-            break;
-        case (0x16): 
-            break;
-        case (0x17): 
+        case (0x16):
+            {
+                uint8_t val = memory->read(hl);
+                rla(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x17):
+            rla(&a);
+            update(2, 8);
             break;
         case (0x18):
             break;
@@ -2222,6 +2248,8 @@ void CPU::rlc(uint8_t *reg){
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
     setFlags<RegisterFlags::CARRY_FLAG>(carryValue);
     *reg <<= 1;
+    if(carryValue) *reg += 1;
+
 
     setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
@@ -2233,7 +2261,22 @@ void CPU::rlc(uint16_t *reg){ //for hl
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
     setFlags<RegisterFlags::CARRY_FLAG>(carryValue);
     *reg <<= 1;
+    if(carryValue) *reg += 1;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::rrc(uint8_t *reg){
+    //carry bit does not rotate through
+    bool willCarry = *reg & (0x01);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+    *reg >>= 1;
+    if(willCarry) *reg |= (1<<7);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+
 }
