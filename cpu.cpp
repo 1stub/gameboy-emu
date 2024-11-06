@@ -1739,88 +1739,148 @@ void CPU::extended_execute(uint8_t opcode){
             update(2,8);
             break;
         case (0x10):
-            rla(&b);
+            rl(&b);
             update(2, 8);
             break;
         case (0x11):
-            rla(&c);
+            rl(&c);
             update(2, 8);
             break;
         case (0x12):
-            rla(&d);
+            rl(&d);
             update(2, 8);
             break;
         case (0x13):
-            rla(&e);
+            rl(&e);
             update(2, 8);
             break;
         case (0x14):
-            rla(&h);
+            rl(&h);
             update(2, 8);
             break;
         case (0x15):
-            rla(&l);
+            rl(&l);
             update(2, 8);
             break;
         case (0x16):
             {
                 uint8_t val = memory->read(hl);
-                rla(&val);
+                rl(&val);
                 memory->m_Rom[hl] = val;
                 update(2, 16);
                 break;
             }
         case (0x17):
-            rla(&a);
+            rl(&a);
             update(2, 8);
             break;
         case (0x18):
+            rr(&b);
+            update(2,8);
             break;
-        case (0x19): 
+        case (0x19):
+            rr(&c);
+            update(2,8);
             break;
-        case (0x1A): 
+        case (0x1A):
+            rr(&d);
+            update(2,8);
             break;
-        case (0x1B): 
+        case (0x1B):
+            rr(&e);
+            update(2,8);
             break;
-        case (0x1C): 
+        case (0x1C):
+            rr(&h);
+            update(2,8);
             break;
-        case (0x1D): 
+        case (0x1D):
+            rr(&l);
+            update(2,8);
             break;
         case (0x1E): 
+            {
+                uint8_t val = memory->read(hl);
+                rr(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x1F):
+            rr(&a);
+            update(2,8);
             break;
-        case (0x1F): 
+        case (0x20):
+            sla(&b);
+            update(2,8);
             break;
-        case (0x20): 
+        case (0x21):
+            sla(&c);
+            update(2,8);
             break;
-        case (0x21): 
+        case (0x22):
+            sla(&d);
+            update(2,8);
             break;
-        case (0x22): 
+        case (0x23):
+            sla(&e);
+            update(2,8);
             break;
-        case (0x23): 
+        case (0x24):
+            sla(&h);
+            update(2,8);
             break;
-        case (0x24): 
+        case (0x25):
+            sla(&l);
+            update(2,8);
             break;
-        case (0x25): 
-            break;
-        case (0x26): 
-            break;
-        case (0x27): 
+        case (0x26):
+            {
+                uint8_t val = memory->read(hl);
+                sla(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x27):
+            sla(&a);
+            update(2,8);
             break;
         case (0x28):
+            sra(&b);
+            update(2,8);
             break;
-        case (0x29): 
+        case (0x29):
+            sra(&c);
+            update(2,8);
             break;
-        case (0x2A): 
+        case (0x2A):
+            sra(&d);
+            update(2,8);
             break;
-        case (0x2B): 
+        case (0x2B):
+            sra(&e);
+            update(2,8);
             break;
-        case (0x2C): 
+        case (0x2C):
+            sra(&h);
+            update(2,8);
             break;
-        case (0x2D): 
+        case (0x2D):
+            sra(&l);
+            update(2,8);
             break;
-        case (0x2E): 
-            break;
-        case (0x2F): 
+        case (0x2E):
+            {
+                uint8_t val = memory->read(hl);
+                sra(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x2F):
+            sra(&a);
+            update(2,8);
             break;
         case (0x30): 
             break;
@@ -2279,4 +2339,59 @@ void CPU::rrc(uint8_t *reg){
     setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
 
+}
+
+
+void CPU::rl(uint8_t *reg){
+    //rotate through carry flag
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    bool willCarry =  *reg & (1<<7);
+    *reg <<= 1;
+    if(carryBitSet) *reg += 1;
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::rr(uint8_t *reg){
+    //rotate through carry flag
+    bool willCarry = *reg & (0x01);
+    uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+    *reg >>= 1;
+    if(carryBitSet) *reg |= (1<<7);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::sla(uint8_t *reg){
+    //shift left arithmetically
+    bool willCarry = *reg & (1 << 7);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+    *reg <<= 1;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::sra(uint8_t *reg){
+    //shift right arithmetically, bit 7 of reg unchanged
+    bool willCarry = *reg & (0x01);
+    bool highOrder =  *reg & (1 << 7);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+    *reg >>= 1;
+    if(highOrder) *reg |= (1 << 7);
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
 }

@@ -10,8 +10,8 @@ int main(){
     jsonTesting jsonTesting(cpu, memory);
     
     if(!jsonTesting.test()) std::cout << "All tests passed successfully." << std::endl;
-    free(memory);
-    free(cpu);
+    delete(memory);
+    delete(cpu);
     return 0;
 }
 

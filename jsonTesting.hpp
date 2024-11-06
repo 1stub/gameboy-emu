@@ -22,7 +22,6 @@ class jsonTesting{
 
         bool test() {
             namespace fs = std::filesystem;
-            using json = nlohmann::json;
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
@@ -38,6 +37,8 @@ class jsonTesting{
                     ss << std::hex << std::setw(2) << std::setfill('0') << i << ".json";
                     std::string filename = ss.str();
 
+                    std::cout << filename << std::endl;
+
                     fs::path filePath = directory + filename;
                     if (!fs::exists(filePath)) {
                         std::cerr << "Failed to open " << filename << std::endl;
@@ -52,8 +53,6 @@ class jsonTesting{
                 }
             }
             
-            //current issue is that pc doesnt update properly since within main instructions
-            //there is an update to pc and cycles aswell as in the extended
             // Loop for extended `CB`-prefixed instruction set files
             for (int i = 0x00; i <= 0xFF; i++) {
                 if (wasError) break;
@@ -130,7 +129,7 @@ class jsonTesting{
                 }
 
                 // Run cycles
-                for (const auto& cycle : test["cycles"]) {
+                for (const auto& cycle : test["cycles"]) { //ignore warnings, need cpu to cycle correct amount
                     m_cpu->cycle();
                 }
 

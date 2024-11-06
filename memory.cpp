@@ -68,3 +68,6 @@ uint16_t Memory::read16(uint16_t addr){
     return m_Rom[addr] | (m_Rom[addr+1] << 8);
 }
 
+void Memory::loadRom(std::string location){
+}
+

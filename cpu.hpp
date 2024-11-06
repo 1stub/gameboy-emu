@@ -74,9 +74,14 @@ class CPU{
         void rlc(uint16_t *reg);
         void rlca(uint8_t *reg);
         void rla(uint8_t *reg);
+        void rl(uint8_t *reg);
         void rrca(uint8_t *reg);
         void rrc(uint8_t *reg);
         void rra(uint8_t *reg);
+        void rr(uint8_t *reg);
+        void sla(uint8_t *reg);
+        void sra(uint8_t *reg);
+        void swap(uint8_t *reg); 
     private:
         //we can use bitwise operations with these flags to set the flag bits in our registers
         uint16_t pc; //program counter
