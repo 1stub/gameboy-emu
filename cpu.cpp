@@ -2234,262 +2234,232 @@ void CPU::extended_execute(uint8_t opcode){
             bit(7, &a); 
             update(2, 8);
             break;
-        case (0x80): 
-            break;
-        case (0x81):
-            break;
-        case (0x82):             
-            break;
-        case (0x83): 
-            break;
-        case (0x84): 
-            break;
-        case (0x85): 
-            break;
-        case (0x86):  
-            break;
-        case (0x87): 
-            break;
-        case (0x88):
-            break;
-        case (0x89): 
-            break;
-        case (0x8A): 
-            break;
-        case (0x8B): 
-            break;
-        case (0x8C):             
-            break;
-        case (0x8D): 
-            break;
-        case (0x8E): 
-            break;
-        case (0x8F): 
-            break;
-        case (0x90): 
-            break;
-        case (0x91): 
-            break;
-        case (0x92): 
-            break;
-        case (0x93): 
-            break;
-        case (0x94): 
-            break;
-        case (0x95): 
-            break;
-        case (0x96): 
-            break;
-        case (0x97): 
-            break;
-        case (0x98):
-            break;
-        case (0x99): 
-            break;
-        case (0x9A): 
-            break;
-        case (0x9B): 
-            break;
-        case (0x9C): 
-            break;
-        case (0x9D): 
-            break;
-        case (0x9E): 
-            break;
-        case (0x9F): 
-            break;
-        case (0xA0): 
-            break;
-        case (0xA1): 
-            break;
-        case (0xA2): 
-            break;
-        case (0xA3): 
-            break;
-        case (0xA4): 
-            break;
-        case (0xA5): 
-            break;
-        case (0xA6): 
-            break;
-        case (0xA7): 
-            break;
-        case (0xA8):
-            break;
-        case (0xA9): 
-            break;
-        case (0xAA): 
-            break;
-        case (0xAB): 
-            break;
-        case (0xAC): 
-            break;
-        case (0xAD): 
-            break;
-        case (0xAE): 
-            break;
-        case (0xAF): 
-            break;
-        case (0xB0): 
-            break;
-        case (0xB1): 
-            break;
-        case (0xB2): 
-            break;
-        case (0xB3): 
-            break;
-        case (0xB4): 
-            break;
-        case (0xB5): 
-            break;
-        case (0xB6): 
-            break;
-        case (0xB7): 
-            break;
-        case (0xB8):
-            break;
-        case (0xB9): 
-            break;
-        case (0xBA): 
-            break;
-        case (0xBB): 
-            break;
-        case (0xBC): 
-            break;
-        case (0xBD): 
-            break;
-        case (0xBE): 
-            break;
-        case (0xBF): 
-            break;
-        case (0xC0): 
-            break;
-        case (0xC1): 
-            break;
-        case (0xC2): 
-            break;
-        case (0xC3): 
-            break;
-        case (0xC4): 
-            break;
-        case (0xC5): 
-            break;
-        case (0xC6): 
-            break;
-        case (0xC7): 
-            break;
-        case (0xC8):
-            break;
-        case (0xC9): 
-            break;
-        case (0xCA): 
-            break;
-        case (0xCB): 
-            break;
-        case (0xCC): 
-            break;
-        case (0xCD): 
-            break;
-        case (0xCE): 
-            break;
-        case (0xCF): 
-            break;
-        case (0xD0): 
-            break;
-        case (0xD1): 
-            break;
-        case (0xD2): 
-            break;
-        case (0xD3): 
-            break;
-        case (0xD4): 
-            break;
-        case (0xD5): 
-            break;
-        case (0xD6): 
-            break;
-        case (0xD7): 
-            break;
-        case (0xD8):
-            break;
-        case (0xD9): 
-            break;
-        case (0xDA): 
-            break;
-        case (0xDB): 
-            break;
-        case (0xDC): 
-            break;
-        case (0xDD): 
-            break;
-        case (0xDE): 
-            break;
-        case (0xDF): 
-            break;
-        case (0xE0): 
-            break;
-        case (0xE1): 
-            break;
-        case (0xE2): 
-            break;
-        case (0xE3): 
-            break;
-        case (0xE4): 
-            break;
-        case (0xE5): 
-            break;
-        case (0xE6): 
-            break;
-        case (0xE7): 
-            break;
-        case (0xE8):
-            break;
-        case (0xE9): 
-            break;
-        case (0xEA): 
-            break;
-        case (0xEB): 
-            break;
-        case (0xEC): 
-            break;
-        case (0xED): 
-            break;
-        case (0xEE): 
-            break;
-        case (0xEF): 
-            break;
-        case (0xF0): 
-            break;
-        case (0xF1): 
-            break;
-        case (0xF2): 
-            break;
-        case (0xF3): 
-            break;
-        case (0xF4): 
-            break;
-        case (0xF5): 
-            break;
-        case (0xF6): 
-            break;
-        case (0xF7): 
-            break;
-        case (0xF8):
-            break;
-        case (0xF9): 
-            break;
-        case (0xFA): 
-            break;
-        case (0xFB): 
-            break;
-        case (0xFC): 
-            break;
-        case (0xFD): 
-            break;
-        case (0xFE): 
-            break;
-        case (0xFF): 
-            break;
+        //was taking too long to do manually, chatGPT generated rest hence different format (slightly)
+        case 0x80: res(0, &b); update(2, 8); break;
+        case 0x81: res(0, &c); update(2, 8); break;
+        case 0x82: res(0, &d); update(2, 8); break;
+        case 0x83: res(0, &e); update(2, 8); break;
+        case 0x84: res(0, &h); update(2, 8); break;
+        case 0x85: res(0, &l); update(2, 8); break;
+        case 0x86: {
+            uint8_t val = memory->read(hl);
+            res(0, &val); 
+            memory->m_Rom[hl] = val; 
+            update(2, 16); 
+            break;
+        }
+        case 0x87: res(0, &a); update(2, 8); break;
+        case 0x88: res(1, &b); update(2, 8); break;
+        case 0x89: res(1, &c); update(2, 8); break;
+        case 0x8A: res(1, &d); update(2, 8); break;
+        case 0x8B: res(1, &e); update(2, 8); break;
+        case 0x8C: res(1, &h); update(2, 8); break;
+        case 0x8D: res(1, &l); update(2, 8); break;
+        case 0x8E: {
+            uint8_t val = memory->read(hl);
+            res(1, &val); 
+            memory->m_Rom[hl] = val; 
+            update(2, 16); 
+            break;
+        }
+        case 0x8F: res(1, &a); update(2, 8); break;
+        case 0x90: res(2, &b); update(2, 8); break;
+        case 0x91: res(2, &c); update(2, 8); break;
+        case 0x92: res(2, &d); update(2, 8); break;
+        case 0x93: res(2, &e); update(2, 8); break;
+        case 0x94: res(2, &h); update(2, 8); break;
+        case 0x95: res(2, &l); update(2, 8); break;
+        case 0x96: {
+            uint8_t val = memory->read(hl);
+            res(2, &val); 
+            memory->m_Rom[hl] = val; 
+            update(2, 16); 
+            break;
+        }
+        case 0x97: res(2, &a); update(2, 8); break;
+        case 0x98: res(3, &b); update(2, 8); break;
+        case 0x99: res(3, &c); update(2, 8); break;
+        case 0x9A: res(3, &d); update(2, 8); break;
+        case 0x9B: res(3, &e); update(2, 8); break;
+        case 0x9C: res(3, &h); update(2, 8); break;
+        case 0x9D: res(3, &l); update(2, 8); break;
+        case 0x9E: {
+            uint8_t val = memory->read(hl);
+            res(3, &val); 
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0x9F: res(3, &a); update(2, 8); break;
+        case 0xA0: res(4, &b); update(2, 8); break;
+        case 0xA1: res(4, &c); update(2, 8); break;
+        case 0xA2: res(4, &d); update(2, 8); break;
+        case 0xA3: res(4, &e); update(2, 8); break;
+        case 0xA4: res(4, &h); update(2, 8); break;
+        case 0xA5: res(4, &l); update(2, 8); break;
+        case 0xA6: {
+            uint8_t val = memory->read(hl);
+            res(4, &val); 
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xA7: res(4, &a); update(2, 8); break;
+        case 0xA8: res(5, &b); update(2, 8); break;
+        case 0xA9: res(5, &c); update(2, 8); break;
+        case 0xAA: res(5, &d); update(2, 8); break;
+        case 0xAB: res(5, &e); update(2, 8); break;
+        case 0xAC: res(5, &h); update(2, 8); break;
+        case 0xAD: res(5, &l); update(2, 8); break;
+        case 0xAE: {
+            uint8_t val = memory->read(hl);
+            res(5, &val); 
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xAF: res(5, &a); update(2, 8); break;
+        case 0xB0: res(6, &b); update(2, 8); break;
+        case 0xB1: res(6, &c); update(2, 8); break;
+        case 0xB2: res(6, &d); update(2, 8); break;
+        case 0xB3: res(6, &e); update(2, 8); break;
+        case 0xB4: res(6, &h); update(2, 8); break;
+        case 0xB5: res(6, &l); update(2, 8); break;
+        case 0xB6: {
+            uint8_t val = memory->read(hl);
+            res(6, &val); 
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xB7: res(6, &a); update(2, 8); break;
+
+        case 0xB8: res(7, &b); update(2, 8); break;
+        case 0xB9: res(7, &c); update(2, 8); break;
+        case 0xBA: res(7, &d); update(2, 8); break;
+        case 0xBB: res(7, &e); update(2, 8); break;
+        case 0xBC: res(7, &h); update(2, 8); break;
+        case 0xBD: res(7, &l); update(2, 8); break;
+        case 0xBE: {
+            uint8_t val = memory->read(hl);
+            res(7, &val); 
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xBF: res(7, &a); update(2, 8); break;
+        case 0xC0: set(0, &b); update(2, 8); break;
+        case 0xC1: set(0, &c); update(2, 8); break;
+        case 0xC2: set(0, &d); update(2, 8); break;
+        case 0xC3: set(0, &e); update(2, 8); break;
+        case 0xC4: set(0, &h); update(2, 8); break;
+        case 0xC5: set(0, &l); update(2, 8); break;
+        case 0xC6: {
+            uint8_t val = memory->read(hl);
+            set(0, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xC7: set(0, &a); update(2, 8); break;
+        case 0xC8: set(1, &b); update(2, 8); break;
+        case 0xC9: set(1, &c); update(2, 8); break;
+        case 0xCA: set(1, &d); update(2, 8); break;
+        case 0xCB: set(1, &e); update(2, 8); break;
+        case 0xCC: set(1, &h); update(2, 8); break;
+        case 0xCD: set(1, &l); update(2, 8); break;
+        case 0xCE: {
+            uint8_t val = memory->read(hl);
+            set(1, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xCF: set(1, &a); update(2, 8); break;
+        case 0xD0: set(2, &b); update(2, 8); break;
+        case 0xD1: set(2, &c); update(2, 8); break;
+        case 0xD2: set(2, &d); update(2, 8); break;
+        case 0xD3: set(2, &e); update(2, 8); break;
+        case 0xD4: set(2, &h); update(2, 8); break;
+        case 0xD5: set(2, &l); update(2, 8); break;
+        case 0xD6: {
+            uint8_t val = memory->read(hl);
+            set(2, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xD7: set(2, &a); update(2, 8); break;
+        case 0xD8: set(3, &b); update(2, 8); break;
+        case 0xD9: set(3, &c); update(2, 8); break;
+        case 0xDA: set(3, &d); update(2, 8); break;
+        case 0xDB: set(3, &e); update(2, 8); break;
+        case 0xDC: set(3, &h); update(2, 8); break;
+        case 0xDD: set(3, &l); update(2, 8); break;
+        case 0xDE: {
+            uint8_t val = memory->read(hl);
+            set(3, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xDF: set(3, &a); update(2, 8); break;
+        case 0xE0: set(4, &b); update(2, 8); break;
+        case 0xE1: set(4, &c); update(2, 8); break;
+        case 0xE2: set(4, &d); update(2, 8); break;
+        case 0xE3: set(4, &e); update(2, 8); break;
+        case 0xE4: set(4, &h); update(2, 8); break;
+        case 0xE5: set(4, &l); update(2, 8); break;
+        case 0xE6: {
+            uint8_t val = memory->read(hl);
+            set(4, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xE7: set(4, &a); update(2, 8); break;
+        case 0xE8: set(5, &b); update(2, 8); break;
+        case 0xE9: set(5, &c); update(2, 8); break;
+        case 0xEA: set(5, &d); update(2, 8); break;
+        case 0xEB: set(5, &e); update(2, 8); break;
+        case 0xEC: set(5, &h); update(2, 8); break;
+        case 0xED: set(5, &l); update(2, 8); break;
+        case 0xEE: {
+            uint8_t val = memory->read(hl);
+            set(5, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xEF: set(5, &a); update(2, 8); break;
+        case 0xF0: set(6, &b); update(2, 8); break;
+        case 0xF1: set(6, &c); update(2, 8); break;
+        case 0xF2: set(6, &d); update(2, 8); break;
+        case 0xF3: set(6, &e); update(2, 8); break;
+        case 0xF4: set(6, &h); update(2, 8); break;
+        case 0xF5: set(6, &l); update(2, 8); break;
+        case 0xF6: {
+            uint8_t val = memory->read(hl);
+            set(6, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xF7: set(6, &a); update(2, 8); break;
+        case 0xF8: set(7, &b); update(2, 8); break;
+        case 0xF9: set(7, &c); update(2, 8); break;
+        case 0xFA: set(7, &d); update(2, 8); break;
+        case 0xFB: set(7, &e); update(2, 8); break;
+        case 0xFC: set(7, &h); update(2, 8); break;
+        case 0xFD: set(7, &l); update(2, 8); break;
+        case 0xFE: {
+            uint8_t val = memory->read(hl);
+            set(7, &val);
+            memory->m_Rom[hl] = val;  
+            update(2, 16); 
+            break;
+        }
+        case 0xFF: set(7, &a); update(2, 8); break;
         default:  break;
     };
 }
@@ -2619,4 +2589,12 @@ void CPU::bit(uint8_t bitNo, uint8_t *reg){
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(true);
     setFlags<RegisterFlags::ZERO_FLAG>(!isSet); //we set the zero flag if the bit is... NOT SET!
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::set(uint8_t bitNo, uint8_t *reg){
+    *reg |= (1<<bitNo);
+}
+
+void CPU::res(uint8_t bitNo, uint8_t *reg){
+    *reg &= ~(1<<bitNo);
 }
