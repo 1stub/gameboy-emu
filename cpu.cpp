@@ -1882,165 +1882,357 @@ void CPU::extended_execute(uint8_t opcode){
             sra(&a);
             update(2,8);
             break;
-        case (0x30): 
+        case (0x30):
+            swap(&b);
+            update(2,8);
             break;
-        case (0x31): 
+        case (0x31):
+            swap(&c);
+            update(2,8);
             break;
-        case (0x32): 
+        case (0x32):
+            swap(&d);
+            update(2,8);
             break;
-        case (0x33): 
+        case (0x33):
+            swap(&e);
+            update(2,8);
             break;
-        case (0x34): 
+        case (0x34):
+            swap(&h);
+            update(2,8);
             break;
-        case (0x35): 
+        case (0x35):
+            swap(&l);
+            update(2,8);
             break;
-        case (0x36): 
-            break;
-        case (0x37): 
+        case (0x36):
+            {
+                uint8_t val = memory->read(hl);
+                swap(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x37):
+            swap(&a);
+            update(2,8);
             break;
         case (0x38):
+            srl(&b);
+            update(2,8);
             break;
-        case (0x39): 
+        case (0x39):
+            srl(&c);
+            update(2,8);
             break;
-        case (0x3A): 
+        case (0x3A):
+            srl(&d);
+            update(2,8);
             break;
-        case (0x3B): 
+        case (0x3B):
+            srl(&e);
+            update(2,8);
             break;
-        case (0x3C): 
+        case (0x3C):
+            srl(&h);
+            update(2,8);
             break;
-        case (0x3D): 
+        case (0x3D):
+            srl(&l);
+            update(2,8);
             break;
         case (0x3E): 
-            break;
-        case (0x3F): 
-            break;
-        case (0x40): 
-            break;
-        case (0x41): 
-            break;
-        case (0x42): 
-            break;
-        case (0x43): 
-            break;
-        case (0x44): 
-            break;
-        case (0x45): 
-            break;
-        case (0x46): 
-            break;
-        case (0x47): 
-            break;
-        case (0x48):
-            break;
-        case (0x49): 
-            break;
-        case (0x4A): 
-            break;
-        case (0x4B): 
-            break;
-        case (0x4C): 
-            break;
-        case (0x4D): 
-            break;
-        case (0x4E): 
-            break;
-        case (0x4F): 
-            break;
-        case (0x50): 
-            break;
-        case (0x51): 
-            break;
-        case (0x52): 
-            break;
-        case (0x53): 
-            break;
-        case (0x54): 
-            break;
-        case (0x55): 
-            break;
-        case (0x56): 
-            break;
-        case (0x57): 
-            break;
-        case (0x58):
-            break;
-        case (0x59): 
-            break;
-        case (0x5A): 
-            break;
-        case (0x5B): 
-            break;
-        case (0x5C): 
-            break;
-        case (0x5D): 
-            break;
-        case (0x5E): 
-            break;
-        case (0x5F): 
-            break;
-        case (0x60): 
-            break;
-        case (0x61): 
-            break;
-        case (0x62): 
-            break;
-        case (0x63): 
-            break;
-        case (0x64): 
-            break;
-        case (0x65): 
-            break;
-        case (0x66): 
-            break;
-        case (0x67): 
-            break;
-        case (0x68):
-            break;
-        case (0x69): 
-            break;
-        case (0x6A): 
-            break;
-        case (0x6B): 
-            break;
-        case (0x6C): 
-            break;
-        case (0x6D): 
-            break;
-        case (0x6E): 
-            break;
-        case (0x6F): 
-            break;
-        case (0x70): 
-            break;
-        case (0x71): 
-            break;
-        case (0x72): 
-            break;
-        case (0x73): 
-            break;
-        case (0x74): 
-            break;
-        case (0x75): 
-            break;
-        case (0x76): 
-            break;
-        case (0x77): 
-            break;
-        case (0x78):
-            break;
-        case (0x79): 
-            break;
-        case (0x7A): 
-            break;
-        case (0x7B): 
-            break;
-        case (0x7C): 
-            break;
-        case (0x7D): 
-            break;
-        case (0x7E): 
-            break;
-        case (0x7F): 
+            {
+                uint8_t val = memory->read(hl);
+                srl(&val);
+                memory->m_Rom[hl] = val;
+                update(2, 16);
+                break;
+            }
+        case (0x3F):
+            srl(&a);
+            update(2,8);
+            break;
+        case 0x40: 
+            bit(0, &b); 
+            update(2, 8); 
+            break;
+        case 0x41: 
+            bit(0, &c); 
+            update(2, 8); 
+            break;
+        case 0x42: 
+            bit(0, &d); 
+            update(2, 8); 
+            break;
+        case 0x43: 
+            bit(0, &e); 
+            update(2, 8);
+            break;
+        case 0x44: 
+            bit(0, &h); 
+            update(2, 8); 
+            break;
+        case 0x45: 
+            bit(0, &l); 
+            update(2, 8);
+            break;
+        case 0x46:
+            {
+                uint8_t val = memory->read(hl);
+                bit(0, &val); 
+                update(2, 12); 
+                break;
+            }
+        case 0x47: 
+            bit(0, &a);
+            update(2, 8);
+            break;
+        case 0x48: 
+            bit(1, &b);
+            update(2, 8);
+            break;
+        case 0x49: 
+            bit(1, &c);
+            update(2, 8);
+            break;
+        case 0x4A: 
+            bit(1, &d);
+            update(2, 8);
+            break;
+        case 0x4B: 
+            bit(1, &e);
+            update(2, 8);
+            break;
+        case 0x4C: 
+            bit(1, &h);
+            update(2, 8);
+            break;
+        case 0x4D: 
+            bit(1, &l);
+            update(2, 8);
+            break;
+        case 0x4E:
+            {
+                uint8_t val = memory->read(hl);
+                bit(1, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x4F: 
+            bit(1, &a);
+            update(2, 8);
+            break;
+        case 0x50: 
+            bit(2, &b);
+            update(2, 8); 
+            break;
+        case 0x51: 
+            bit(2, &c);
+            update(2, 8);
+            break;
+        case 0x52: 
+            bit(2, &d);
+            update(2, 8);
+            break;
+        case 0x53: 
+            bit(2, &e); 
+            update(2, 8);
+            break;
+        case 0x54: 
+            bit(2, &h);
+            update(2, 8);
+            break;
+        case 0x55: 
+            bit(2, &l);
+            update(2, 8);
+            break;
+        case 0x56: 
+            {
+                uint8_t val = memory->read(hl);
+                bit(2, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x57: 
+            bit(2, &a);
+            update(2, 8);
+            break;
+        case 0x58: 
+            bit(3, &b); 
+            update(2, 8);
+            break;
+        case 0x59: 
+            bit(3, &c); 
+            update(2, 8);
+            break;
+        case 0x5A: 
+            bit(3, &d); 
+            update(2, 8);
+            break;
+        case 0x5B: 
+            bit(3, &e);
+            update(2, 8);
+            break;
+        case 0x5C: 
+            bit(3, &h);
+            update(2, 8);
+            break;
+        case 0x5D: 
+            bit(3, &l);
+            update(2, 8);
+            break;
+        case 0x5E: 
+            {
+                uint8_t val = memory->read(hl);
+                bit(3, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x5F: 
+            bit(3, &a);
+            update(2, 8); 
+            break;
+        case 0x60: 
+            bit(4, &b);
+            update(2, 8);
+            break;
+        case 0x61: 
+            bit(4, &c);
+            update(2, 8);
+            break;
+        case 0x62: 
+            bit(4, &d);
+            update(2, 8);
+            break;
+        case 0x63: 
+            bit(4, &e);
+            update(2, 8); 
+            break;
+        case 0x64: 
+            bit(4, &h);
+            update(2, 8);
+            break;
+        case 0x65: 
+            bit(4, &l); 
+            update(2, 8);
+            break;
+        case 0x66: 
+            {
+                uint8_t val = memory->read(hl);
+                bit(4, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x67: 
+            bit(4, &a);
+            update(2, 8);
+            break;
+        case 0x68:
+            bit(5, &b); 
+            update(2, 8);
+            break;
+        case 0x69:
+            bit(5, &c); 
+            update(2, 8);
+            break;
+        case 0x6A:
+            bit(5, &d); 
+            update(2, 8);
+            break;
+        case 0x6B: 
+            bit(5, &e); 
+            update(2, 8);
+            break;
+        case 0x6C:
+            bit(5, &h); 
+            update(2, 8); 
+            break;
+        case 0x6D:
+            bit(5, &l); 
+            update(2, 8); 
+            break;
+        case 0x6E: 
+            {
+                uint8_t val = memory->read(hl);
+                bit(5, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x6F: 
+            bit(5, &a);
+            update(2, 8);
+            break;
+        case 0x70: 
+            bit(6, &b);
+            update(2, 8);
+            break;
+        case 0x71: 
+            bit(6, &c); 
+            update(2, 8);
+            break;
+        case 0x72: 
+            bit(6, &d); 
+            update(2, 8);
+            break;
+        case 0x73: 
+            bit(6, &e);
+            update(2, 8);
+            break;
+        case 0x74: 
+            bit(6, &h);
+            update(2, 8);
+            break;
+        case 0x75: 
+            bit(6, &l);
+            update(2, 8);
+            break;
+        case 0x76: 
+            {
+                uint8_t val = memory->read(hl);
+                bit(6, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x77: 
+            bit(6, &a);
+            update(2, 8);
+            break;
+        case 0x78: 
+            bit(7, &b);
+            update(2, 8); 
+            break;
+        case 0x79: 
+            bit(7, &c);
+            update(2, 8);
+            break;
+        case 0x7A: 
+            bit(7, &d);
+            update(2, 8);
+            break;
+        case 0x7B:
+            bit(7, &e); 
+            update(2, 8);
+            break;
+        case 0x7C:
+            bit(7, &h);
+            update(2, 8); 
+            break;
+        case 0x7D:
+            bit(7, &l);
+            update(2, 8);
+            break;
+        case 0x7E:
+            {
+                uint8_t val = memory->read(hl);
+                bit(7, &val); 
+                update(2, 12);
+                break;
+            }
+        case 0x7F:
+            bit(7, &a); 
+            update(2, 8);
             break;
         case (0x80): 
             break;
@@ -2393,5 +2585,38 @@ void CPU::sra(uint8_t *reg){
     if(highOrder) *reg |= (1 << 7);
 
     setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::swap(uint8_t *reg){
+    //swap upper 4 bits with lower 4
+    uint8_t low = *reg << 4;
+    uint8_t high = *reg >> 4;
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(false);
+    *reg = low | high;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::srl(uint8_t *reg){
+    //shift right logically
+    bool willCarry = *reg & (0x01);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(false);
+    setFlags<RegisterFlags::CARRY_FLAG>(willCarry);
+    *reg >>= 1;
+
+    setFlags<RegisterFlags::ZERO_FLAG>(*reg == 0);
+    setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
+}
+
+void CPU::bit(uint8_t bitNo, uint8_t *reg){
+    bool isSet = *reg & (1<<bitNo);
+
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>(true);
+    setFlags<RegisterFlags::ZERO_FLAG>(!isSet); //we set the zero flag if the bit is... NOT SET!
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
 }
