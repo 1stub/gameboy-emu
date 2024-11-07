@@ -23,6 +23,10 @@ void CPU::cycle(){
     ticks = 0;
     uint8_t opcode = memory->read(pc);
     execute(opcode);
+   
+    //ideally this would be handled within write() in mmu, but my approach is scuffed
+    //so this is what we got lmao
+    if(memory->read(0xFF02) & 0x80) memory->performSerialTransfer();
 }
 
 void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
@@ -1267,8 +1271,6 @@ void CPU::setFlags(const bool setOrReset){
 }
 
 void CPU::add(uint8_t *dst, uint8_t value){
-    std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
-    
     uint16_t fullResult = *dst + value;
     
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
@@ -1280,8 +1282,6 @@ void CPU::add(uint8_t *dst, uint8_t value){
 }
 
 void CPU::add(uint16_t *dst, uint16_t value){
-    std::cout << "Adding " << (int)value << " to " << (int)(*dst) << std::endl;
-    
     uint32_t fullResult = *dst + value;
     
     setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFFFF);
@@ -1294,7 +1294,6 @@ void CPU::add(uint16_t *dst, uint16_t value){
 
 void CPU::adc(uint8_t *dst, uint8_t value) {
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
-    std::cout << "carry bit set: " << (int)carryBitSet << std::endl; 
 
     uint16_t fullResult = *dst + value + carryBitSet;
 
@@ -1308,8 +1307,6 @@ void CPU::adc(uint8_t *dst, uint8_t value) {
 }
 
 void CPU::sub(uint8_t *dst, uint8_t value) {
-    std::cout << "Subtracting " << (int)value << " from " << (int)(*dst) << std::endl;
-
     uint16_t fullResult = *dst - value;
 
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));
@@ -1322,7 +1319,6 @@ void CPU::sub(uint8_t *dst, uint8_t value) {
 
 void CPU::sbc(uint8_t *dst, uint8_t value) {
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
-    std::cout << "carry bit set: " << (int)carryBitSet << std::endl;
 
     uint16_t fullResult = *dst - value - carryBitSet;
 
@@ -1335,7 +1331,6 @@ void CPU::sbc(uint8_t *dst, uint8_t value) {
 }
 
 void CPU::i_and(uint8_t *dst, uint8_t value) {
-    std::cout << "Bitwise AND with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
     *dst &= value;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
@@ -1345,7 +1340,6 @@ void CPU::i_and(uint8_t *dst, uint8_t value) {
 }
 
 void CPU::i_xor(uint8_t *dst, uint8_t value) {
-    std::cout << "Bitwise XOR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
     *dst ^= value;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
@@ -1355,7 +1349,6 @@ void CPU::i_xor(uint8_t *dst, uint8_t value) {
 }
 
 void CPU::i_or(uint8_t *dst, uint8_t value) {
-    std::cout << "Bitwise OR with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
     *dst |= value;
 
     setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
@@ -1365,7 +1358,6 @@ void CPU::i_or(uint8_t *dst, uint8_t value) {
 }
 
 void CPU::cp(uint8_t *dst, uint8_t value) {
-    std::cout << "CP with: " << std::hex << (int)*dst << " && " << (int)value << std::endl; 
     uint16_t fullResult = *dst - value;
 
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < (value & 0x0F)));

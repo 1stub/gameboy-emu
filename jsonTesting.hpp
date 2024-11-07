@@ -25,7 +25,7 @@ class jsonTesting{
 
             static bool wasError = false;
             std::string directory = "./sm83/v1/";
-            bool processMainInstrs = false;
+            bool processMainInstrs = true;
 
             // Loop for regular instruction set files
             if(processMainInstrs){

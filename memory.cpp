@@ -22,7 +22,7 @@ Memory::Memory(){
     m_Rom[0xFF24] = 0x77 ;
     m_Rom[0xFF25] = 0xF3 ;
     m_Rom[0xFF26] = 0xF1 ;
-    m_Rom[0xFF40] = 0x91 ;
+    m_Rom[0xFF40] = 0x91 ; //LCD Control (R/W)
     m_Rom[0xFF42] = 0x00 ;
     m_Rom[0xFF43] = 0x00 ;
     m_Rom[0xFF45] = 0x00 ;
@@ -69,5 +69,32 @@ uint16_t Memory::read16(uint16_t addr){
 }
 
 void Memory::loadRom(std::string location){
+    //this doesnt work...
+    std::ifstream input(location, std::ios::binary);
+
+    if (!input) {
+        throw std::runtime_error("Failed to open ROM file.");
+    }
+
+    //seek to end of .gb file and get its size
+    input.seekg(0, std::ios::end);
+    std::streamsize size = input.tellg();
+    std::cout << size << std::endl;
+    input.seekg(0, std::ios::beg);
+    
+    if (size > sizeof(m_Rom)) {
+        throw std::runtime_error("ROM file is too large to fit into memory.");
+    }
+    
+    if (!input.read(reinterpret_cast<char*>(m_Rom), size)) {
+        throw std::runtime_error("Failed to read ROM data.");
+    }
+}
+
+void Memory::performSerialTransfer(){
+    char data = (char)m_Rom[0xFF01];
+    if(data == ' ') std::cout << std::endl;
+    std::cout << data;
+    m_Rom[0xFF02] &= 0x7F; //clear the transfer flag
 }
 

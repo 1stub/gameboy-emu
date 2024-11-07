@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <string>
+#include <iostream>
+#include <fstream>
 
 class Memory{
     public:
@@ -11,8 +13,10 @@ class Memory{
         void write(uint16_t addr, uint8_t data);
         uint16_t read16(uint16_t addr);
         void loadRom(std::string location);
+        void performSerialTransfer();
 
         uint8_t m_Rom[0x10000];  
+        std::string serial_output;
     private:
         uint8_t ie; //interupt enable
         uint8_t _if; //interrtupt flag, if is reserved so added _ prefix
