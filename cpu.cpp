@@ -13,6 +13,7 @@ CPU::CPU(Memory* mem){
     hl = 0x014D;
     pc = 0x100;
     sp = 0xFFFE; 
+    ime = false;
 }
 
 void CPU::cycle(){
@@ -22,11 +23,7 @@ void CPU::cycle(){
     }
     ticks = 0;
     uint8_t opcode = memory->read(pc);
-    execute(opcode);
-   
-    //ideally this would be handled within write() in mmu, but my approach is scuffed
-    //so this is what we got lmao
-    if(memory->read(0xFF02) & 0x80) memory->performSerialTransfer();
+    execute(opcode); 
 }
 
 void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
@@ -574,7 +571,7 @@ void CPU::execute(uint8_t opcode){
         case 0x76: 
             // HALT implementation will go here in the future
             
-            update(1, 4);
+            update(-1, 0);
             break;
         case 0x77: {
             uint8_t val = a;
@@ -980,7 +977,8 @@ void CPU::execute(uint8_t opcode){
             retc<RegisterFlags::CARRY_FLAG>(true, false);
             break;
         case (0xD9):
-            ime = true;
+            //why the heck did i have ime here?
+            //ime = true;
             ret();
             update(0,16); //pc updating handeled in ret
             break;

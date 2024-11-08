@@ -7,7 +7,7 @@ SRC_DIR = .
 OBJ_DIR = obj
 
 # List of source files
-SRCS = $(SRC_DIR)/cpu.cpp $(SRC_DIR)/memory.cpp $(SRC_DIR)/jsonTesting.hpp $(SRC_DIR)/main.cpp 
+SRCS = $(SRC_DIR)/cpu.cpp $(SRC_DIR)/memory.cpp $(SRC_DIR)/emulator.cpp $(SRC_DIR)/jsonTesting.hpp $(SRC_DIR)/main.cpp 
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 # Output binary

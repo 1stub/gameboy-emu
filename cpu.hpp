@@ -86,11 +86,12 @@ class CPU{
         void bit(uint8_t bitNo, uint8_t *reg);
         void set(uint8_t bitNo, uint8_t *reg);
         void res(uint8_t bitNo, uint8_t *reg);
-    private:
-        //we can use bitwise operations with these flags to set the flag bits in our registers
+
+        bool ime; //enable/disable intererupts
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
-        bool ime; //enable/disable intererupts
+    private:
+        //we can use bitwise operations with these flags to set the flag bits in our registers
         Memory* memory;
         //registers can be accessed as either the individual 8bit or combined 16 bit. f is for flags
         struct {
