@@ -16,14 +16,16 @@ CPU::CPU(Memory* mem){
     ime = false;
 }
 
-void CPU::cycle(){
+//skeptical on handling returning cycles to our timers like this
+uint64_t CPU::cycle(){
     if (ticks < static_cast<int>(cycles)) {
         ticks++;
-        return;
+        return cycles;
     }
     ticks = 0;
     uint8_t opcode = memory->read(pc);
     execute(opcode); 
+    return cycles;
 }
 
 void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
@@ -993,9 +995,11 @@ void CPU::execute(uint8_t opcode){
         case (0xDD): 
             break;
         case (0xDE):
-            sbc(&a, memory->read(pc+1));
+            {
+            sbc(&a, memory->read(pc+1)); pc++;
             update(2,8);
             break;
+            }
         case (0xDF): 
             rst(0x18);
             break;
