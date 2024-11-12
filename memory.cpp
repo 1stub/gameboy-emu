@@ -35,26 +35,11 @@ Memory::Memory(){
 }
 
 void Memory::write(uint16_t addr, uint8_t data){
-    if(addr < 0x8000){ //do nothing, this is ROM
+    if(addr == 0xFF04){ //writing to DIV and LY reset it to zero
+        m_Rom[0xFF04] = 0x00;
     }
 
-    //here we write to ECHO ram, so it needs to be reflected in RAM
-    else if(addr >= 0xE000 && addr <= 0xFE00){
-        m_Rom[addr] = data;
-        write(addr - 0x2000, data);
-    }
-
-    //restricted, dont do anything if write here occurs
-    else if(addr >= 0xFEA0 && addr < 0xFEFF){
-    
-    }
-    
-    else if(addr == 0xFFFF){
-        //cpu enable register, used with HALT
-    }
-
-    //now we ehausted all cases of invalid memory writing, so only areas left are fine to write to.
-    else{
+    else{ //this shouldnt be done, but while I figure out how to flesh out writing its fine
         m_Rom[addr] = data;
     }
 }
@@ -78,7 +63,6 @@ void Memory::loadRom(std::string location){
     //seek to end of .gb file and get its size
     input.seekg(0, std::ios::end);
     std::streamsize size = input.tellg();
-    std::cout << size << std::endl;
     input.seekg(0, std::ios::beg);
     
     if (size > sizeof(m_Rom)) {
@@ -92,8 +76,8 @@ void Memory::loadRom(std::string location){
 
 char Memory::performSerialTransfer(){
     char data = (char)m_Rom[0xFF01];
-    if(data == ' ') std::cout << std::endl;
-    std::cout << data;
+    //if(data == ' ') std::cout << std::endl;
+    //std::cout << data;
     m_Rom[0xFF02] &= 0x7F; //clear the transfer flag
     return data;
 }

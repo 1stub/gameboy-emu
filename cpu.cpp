@@ -23,9 +23,9 @@ uint64_t CPU::cycle(){
         return 1;
     }
     ticks = 0;
+    printRegisters();
     uint8_t opcode = memory->read(pc);
     execute(opcode);
-    printRegisters();
     return 1;
 }
 
@@ -537,37 +537,37 @@ void CPU::execute(uint8_t opcode){
             break;
         case 0x70: {
             uint8_t val = b;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
         case 0x71: {
             uint8_t val = c;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
         case 0x72: {
             uint8_t val = d;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
         case 0x73: {
             uint8_t val = e;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
         case 0x74: {
             uint8_t val = h;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
         case 0x75: {
             uint8_t val = l;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
@@ -578,7 +578,7 @@ void CPU::execute(uint8_t opcode){
             break;
         case 0x77: {
             uint8_t val = a;
-            memory->m_Rom[hl]=val;
+            memory->write(hl,val);
             update(1, 8);
             break;
         }
@@ -1005,14 +1005,14 @@ void CPU::execute(uint8_t opcode){
             rst(0x18);
             break;
         case (0xE0):
-            memory->m_Rom[0xFF00+memory->read(pc+1)] = a;
+            memory->write(0xFF00+memory->read(pc+1), a);
             update(2,12);
             break;
         case (0xE1):
             pop(&hl);
             break;
         case (0xE2): 
-            memory->m_Rom[0xFF00 + c] = a;
+            memory->write(0xFF00 + c, a);
             update(1,8);
             break;
         case (0xE3): 
@@ -1049,7 +1049,7 @@ void CPU::execute(uint8_t opcode){
                 uint8_t low = memory->read(pc+1);
                 uint8_t high = memory->read(pc+2); 
                 uint16_t addr = low | (high << 8); 
-                memory->m_Rom[addr] = a;
+                memory->write(addr, a);
                 update(3,16);
                 break;
             }
@@ -1068,8 +1068,9 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xF0):
             {
-                uint16_t n = memory->read(pc+1);
-                a = memory->read(0xFF00 + n);
+                uint8_t n = memory->read(pc+1);
+                uint16_t addr = 0xFF00 + n;
+                a = memory->read(addr);
                 update(2,12);
                 break;
             }
@@ -1141,22 +1142,25 @@ void CPU::execute(uint8_t opcode){
     };
 }
 
-void CPU::printRegisters(){
-    std::cout << "A:" << std::hex << (int)a << " ";
-    std::cout << "F:" << std::hex << (int)f << " ";
-    std::cout << "B:" << std::hex << (int)b << " ";
-    std::cout << "C:" << std::hex << (int)c << " ";
-    std::cout << "D:" << std::hex << (int)d << " ";
-    std::cout << "E:" << std::hex << (int)e << " ";
-    std::cout << "H:" << std::hex << (int)h << " ";
-    std::cout << "L:" << std::hex << (int)l << " ";
-    std::cout << "SP:" << std::hex << (int)sp << " ";
-    std::cout << "PC:" << std::hex << (int)pc << " ";
-    std::cout << "PCMEM:" << std::hex << (int)memory->read(pc) << "," << 
-        (int)memory->read(pc+1) << "," <<
-        (int)memory->read(pc+2) << "," <<
-        (int)memory->read(pc+3) << std::endl;
+void CPU::printRegisters() {
+    std::cout << "A:" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << uintptr_t(a) << " ";
+    std::cout << "F:" << std::setw(2) << uintptr_t(f) << " ";
+    std::cout << "B:" << std::setw(2) << uintptr_t(b) << " ";
+    std::cout << "C:" << std::setw(2) << uintptr_t(c) << " ";
+    std::cout << "D:" << std::setw(2) << uintptr_t(d) << " ";
+    std::cout << "E:" << std::setw(2) << uintptr_t(e) << " ";
+    std::cout << "H:" << std::setw(2) << uintptr_t(h) << " ";
+    std::cout << "L:" << std::setw(2) << uintptr_t(l) << " ";
+    std::cout << "SP:" << std::setw(4) << uintptr_t(sp) << " "; // Adjust width if SP/PC use more bytes
+    std::cout << "PC:" << std::setw(4) << uintptr_t(pc) << " ";
+    std::cout << "PCMEM:" 
+              << std::setw(2) << uintptr_t(memory->read(pc)) << "," 
+              << std::setw(2) << uintptr_t(memory->read(pc+1)) << ","
+              << std::setw(2) << uintptr_t(memory->read(pc+2)) << ","
+              << std::setw(2) << uintptr_t(memory->read(pc+3)) 
+              << std::endl;
 }
+
 
 void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l, uint16_t _pc, uint16_t _sp) { //just using to debug
     a = _a;
@@ -1381,7 +1385,7 @@ void CPU::ld(uint16_t *dst, uint16_t value){
 }
 
 void CPU::ld(uint16_t *addr, uint8_t value){
-    memory->m_Rom[*addr] = value;
+    memory->write(*addr, value);
     //no flag setting necessary
 }
 
@@ -1397,7 +1401,7 @@ void CPU::inc(uint16_t *reg){
     uint8_t mem_val = memory->read(*reg);
     uint8_t val = mem_val + 1;
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(((mem_val & 0x0F) == 0x0F));
-    memory->m_Rom[*reg] = val;
+    memory->write(*reg, val);
 
     setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(false);
@@ -1415,7 +1419,7 @@ void CPU::dec(uint16_t *reg){
     uint8_t mem_val = memory->read(*reg);
     uint8_t val = mem_val - 1;
     setFlags<RegisterFlags::HALF_CARRY_FLAG>(!(mem_val & 0x0F));
-    memory->m_Rom[*reg] = val;
+    memory->write(*reg, val);
 
     setFlags<RegisterFlags::ZERO_FLAG>(val == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
@@ -1617,9 +1621,9 @@ void CPU::call(bool n, bool bypass){
         uint16_t addr = memory->read(pc + 1) | (memory->read(pc + 2) << 8);
 
         sp--;
-        memory->m_Rom[sp] = ((pc + 3) >> 8);   // Push high byte of PC
+        memory->write(sp, (pc + 3) >> 8);   // Push high byte of PC
         sp--;
-        memory->m_Rom[sp] = ((pc + 3) & 0x00FF); // Push low byte of PC
+        memory->write(sp, (pc + 3) & 0x00FF); // Push low byte of PC
 
         pc = addr;
         update(0, 24);
@@ -1631,9 +1635,9 @@ void CPU::rst(uint8_t n){
 
     pc++;
     sp--;
-    memory->m_Rom[sp] = (pc >> 8);   // Push high byte of PC
+    memory->write(sp, pc >> 8);   // Push high byte of PC
     sp--;
-    memory->m_Rom[sp] = (pc & 0x00FF); // Push low byte of PC
+    memory->write(sp, pc & 0x00FF); // Push low byte of PC
 
     pc = addr;
     update(0, 16);
@@ -1653,9 +1657,9 @@ void CPU::pop(uint16_t *reg){
 
 void CPU::push(uint16_t *reg){
     sp--;
-    memory->m_Rom[sp] = (*reg >> 8);
+    memory->write(sp, *reg >> 8);
     sp--;
-    memory->m_Rom[sp] = (*reg & 0x00FF);
+    memory->write(sp, *reg & 0x00FF);
     update(1,16);
 }
 
@@ -1689,7 +1693,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 rlc(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1725,7 +1729,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 rrc(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1761,7 +1765,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 rl(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1797,7 +1801,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 rr(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1833,7 +1837,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 sla(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1869,7 +1873,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 sra(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1905,7 +1909,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 swap(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -1941,7 +1945,7 @@ void CPU::extended_execute(uint8_t opcode){
             {
                 uint8_t val = memory->read(hl);
                 srl(&val);
-                memory->m_Rom[hl] = val;
+                memory->write(hl, val);
                 update(2, 16);
                 break;
             }
@@ -2239,7 +2243,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0x86: {
             uint8_t val = memory->read(hl);
             res(0, &val); 
-            memory->m_Rom[hl] = val; 
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2253,7 +2257,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0x8E: {
             uint8_t val = memory->read(hl);
             res(1, &val); 
-            memory->m_Rom[hl] = val; 
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2267,7 +2271,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0x96: {
             uint8_t val = memory->read(hl);
             res(2, &val); 
-            memory->m_Rom[hl] = val; 
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2281,7 +2285,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0x9E: {
             uint8_t val = memory->read(hl);
             res(3, &val); 
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2295,7 +2299,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xA6: {
             uint8_t val = memory->read(hl);
             res(4, &val); 
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2309,7 +2313,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xAE: {
             uint8_t val = memory->read(hl);
             res(5, &val); 
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2323,7 +2327,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xB6: {
             uint8_t val = memory->read(hl);
             res(6, &val); 
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2338,7 +2342,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xBE: {
             uint8_t val = memory->read(hl);
             res(7, &val); 
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2352,7 +2356,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xC6: {
             uint8_t val = memory->read(hl);
             set(0, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2366,7 +2370,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xCE: {
             uint8_t val = memory->read(hl);
             set(1, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2380,7 +2384,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xD6: {
             uint8_t val = memory->read(hl);
             set(2, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2394,7 +2398,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xDE: {
             uint8_t val = memory->read(hl);
             set(3, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2408,7 +2412,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xE6: {
             uint8_t val = memory->read(hl);
             set(4, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2422,7 +2426,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xEE: {
             uint8_t val = memory->read(hl);
             set(5, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2436,7 +2440,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xF6: {
             uint8_t val = memory->read(hl);
             set(6, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
@@ -2450,7 +2454,7 @@ void CPU::extended_execute(uint8_t opcode){
         case 0xFE: {
             uint8_t val = memory->read(hl);
             set(7, &val);
-            memory->m_Rom[hl] = val;  
+            memory->write(hl, val);
             update(2, 16); 
             break;
         }
