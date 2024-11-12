@@ -20,8 +20,8 @@ enum class RegisterFlags{
 class CPU{
     public:
         CPU(Memory* mem);
-        int ticks = 0;
         uint64_t cycles; //keeps track of T Cycles
+        int ticks = 0;
         uint64_t cycle(); //handles the entire fetch, decode, execute cycle
         void execute(uint8_t opcode); //we need to return the next instruction pc points to 
         void update(uint8_t pc_inc, uint8_t cycles_inc);

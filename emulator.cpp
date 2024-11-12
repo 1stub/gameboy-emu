@@ -1,5 +1,10 @@
 #include "emulator.hpp"
 
+#define DIV 0xFF04
+#define TIMA 0xFF05
+#define TMA 0xFF06
+#define TAC 0xFF07
+
 Emulator::Emulator(CPU* cpu, Memory* mem){
    m_cpu = cpu;
    m_memory = mem;
@@ -13,37 +18,38 @@ void Emulator::emulate(){
 
         //ideally this would be handled within write() in mmu, but my approach is scuffed
         //so this is what we got lmao
-        if(m_memory->read(0xFF02) & 0x80) m_memory->performSerialTransfer();
+        if(m_memory->read(0xFF02) & 0x80){
+            char val = m_memory->performSerialTransfer();
+            if(val == 'F'){
+                std::cout << "ENCOUNTERED ERROR" << std::endl;
+                m_cpu->printRegisters();
+                break;
+            }
+        }
     }
-  
-    //it seems that the IME just allows us to service interrupts.
-    //so if IME == false then we cant do antyhing with interrups until it becomes true.
-    //im thinkling I should move this logic outside of my cpu, for the sake of not clogging up this file even worse
 }
 
+
+//my thinking is that this doesnt work due to writing to DIV not resetting it to zero
 void Emulator::updateTimers(uint64_t cycles){
     //our timer control, TAC is at 0xFF07, second bit is the control bit
-    static const int CLOCKSPEED = 4194304;
     static int timerCounter = 1024;
     static int dividerCounter = 0;
-    static uint8_t dividerRegister = 0;
     
-    //currently working to sort out the DIV register
-    //0xFF04
 
-    dividerRegister += cycles;
+    dividerCounter += cycles;
 
-    if(dividerCounter >= 0xFF){ //was working here
-        dividerCounter = 0;
+    if(dividerCounter >= 256){ //was working here
+        dividerCounter -= 256;
+        m_memory->m_Rom[DIV]++;
     }
 
-    uint8_t TAC = m_memory->read(0xFF07);
-    if((m_memory->read(TAC)) & (1 << 2)){
+    uint8_t TAC_v = m_memory->read(TAC);
+    if(TAC_v & (1 << 2)){
         timerCounter -= cycles;
 
         if(timerCounter <= 0){ //if we have done enough cycles to update our timerCOunter
-            uint8_t mask = (1 << 2) - 1; //the two lowest bits represent speeds
-            uint8_t speed = TAC & mask;
+            uint8_t speed = TAC_v & 0x03;
             switch(speed){ //we read the speed at which our clock should update
                 case 0x00: timerCounter = 1024; break; //freq 4096
                 case 0x01: timerCounter = 16; break; //freq 262114
@@ -52,11 +58,11 @@ void Emulator::updateTimers(uint64_t cycles){
                 default: break;
             }
 
-            if(m_memory->read(0xFF05) > 0xFF){ //timer counter overflow
-                m_memory->m_Rom[0xFF05] = m_memory->read(0xFF06); //reset to value specified in TMA (0xFF06)
+            if(m_memory->read(TIMA) >= 0xFF){ //timer counter overflow
+                m_memory->m_Rom[TIMA] = m_memory->read(TMA); //reset to value specified in TMA (0xFF06)
                 serviceInterrupt(2); //service timer interupt 
             }else{
-                m_memory->m_Rom[0xFF05] = m_memory->read(0xFF05) + m_memory->read(0xFF06); //increase 0xFF05 by val in 0xFF06 if there is not overflow
+                m_memory->m_Rom[TIMA]++; //increase TIMA by val in TMA if there is not overflow
             }
         }
     }

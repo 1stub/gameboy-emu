@@ -20,12 +20,13 @@ CPU::CPU(Memory* mem){
 uint64_t CPU::cycle(){
     if (ticks < static_cast<int>(cycles)) {
         ticks++;
-        return cycles;
+        return 1;
     }
     ticks = 0;
     uint8_t opcode = memory->read(pc);
-    execute(opcode); 
-    return cycles;
+    execute(opcode);
+    printRegisters();
+    return 1;
 }
 
 void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
@@ -1141,20 +1142,20 @@ void CPU::execute(uint8_t opcode){
 }
 
 void CPU::printRegisters(){
-    std::cout << "A: " << std::hex << (int)a << std::endl;
-    std::cout << "B: " << std::hex << (int)b << std::endl;
-    std::cout << "C: " << std::hex << (int)c << std::endl;
-    std::cout << "D: " << std::hex << (int)d << std::endl;
-    std::cout << "E: " << std::hex << (int)e << std::endl;
-    std::cout << "F: " << std::hex << (int)f << std::endl;
-    std::cout << "H: " << std::hex << (int)h << std::endl;
-    std::cout << "L: " << std::hex << (int)l << std::endl;
-    std::cout << "AF: " << std::hex << (int)af << std::endl;
-    std::cout << "BC: " << std::hex << (int)bc << std::endl;
-    std::cout << "DE: " << std::hex << (int)de << std::endl;
-    std::cout << "HL: " << std::hex << (int)hl << std::endl;
-    std::cout << "PC: " << std::hex << (int)pc << std::endl;
-    std::cout << "SP: " << std::hex << (int)sp << std::endl;
+    std::cout << "A:" << std::hex << (int)a << " ";
+    std::cout << "F:" << std::hex << (int)f << " ";
+    std::cout << "B:" << std::hex << (int)b << " ";
+    std::cout << "C:" << std::hex << (int)c << " ";
+    std::cout << "D:" << std::hex << (int)d << " ";
+    std::cout << "E:" << std::hex << (int)e << " ";
+    std::cout << "H:" << std::hex << (int)h << " ";
+    std::cout << "L:" << std::hex << (int)l << " ";
+    std::cout << "SP:" << std::hex << (int)sp << " ";
+    std::cout << "PC:" << std::hex << (int)pc << " ";
+    std::cout << "PCMEM:" << std::hex << (int)memory->read(pc) << "," << 
+        (int)memory->read(pc+1) << "," <<
+        (int)memory->read(pc+2) << "," <<
+        (int)memory->read(pc+3) << std::endl;
 }
 
 void CPU::setRegisters(uint8_t _a, uint8_t _b, uint8_t _c, uint8_t _d, uint8_t _e, uint8_t _f, uint8_t _h, uint8_t _l, uint16_t _pc, uint16_t _sp) { //just using to debug

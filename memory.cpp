@@ -34,7 +34,6 @@ Memory::Memory(){
     m_Rom[0xFFFF] = 0x00 ;
 }
 
-//may need to modify for usage with raw pointer for addr, not sure yet.
 void Memory::write(uint16_t addr, uint8_t data){
     if(addr < 0x8000){ //do nothing, this is ROM
     }
@@ -91,10 +90,11 @@ void Memory::loadRom(std::string location){
     }
 }
 
-void Memory::performSerialTransfer(){
+char Memory::performSerialTransfer(){
     char data = (char)m_Rom[0xFF01];
     if(data == ' ') std::cout << std::endl;
     std::cout << data;
     m_Rom[0xFF02] &= 0x7F; //clear the transfer flag
+    return data;
 }
 

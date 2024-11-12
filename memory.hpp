@@ -13,7 +13,7 @@ class Memory{
         void write(uint16_t addr, uint8_t data);
         uint16_t read16(uint16_t addr);
         void loadRom(std::string location);
-        void performSerialTransfer();
+        char performSerialTransfer();
 
         uint8_t m_Rom[0x10000];  
         std::string serial_output;
