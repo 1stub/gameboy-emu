@@ -16,7 +16,7 @@ Emulator::Emulator(CPU* cpu, Memory* mem){
 
 void Emulator::emulate(){
     //eventually I will have this ise sf::Time from sfml rather than chrono
-    const bool debug = true; //false == print blargg output, true == print reg contents
+    const bool debug = false; //false == print blargg output, true == print reg contents
     const int cyclesPerFrame= 69905; //cpu speed / 60
     const int frameRate = 60; 
     const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
@@ -94,7 +94,7 @@ void Emulator::updateTimers(uint64_t cycles){
             timerCounter -= timerThreshold;
             if(m_memory->read(TIMA) == 0xFF){ //timer counter overflow
                 m_memory->write(TIMA, m_memory->read(TMA)); //reset to value specified in TMA (0xFF06)
-                serviceInterrupt(2); //service timer interupt 
+                requestInterrupt(2); //request timer interupt 
             }else{
                 m_memory->write(TIMA, m_memory->read(TIMA)+1); //increase TIMA by val in TMA if there is not overflow
             }

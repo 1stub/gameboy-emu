@@ -572,7 +572,7 @@ void CPU::execute(uint8_t opcode){
         case 0x76: 
             // HALT implementation will go here in the future
             
-            update(-1, 0);
+            update(1, 4);
             break;
         case 0x77: {
             uint8_t val = a;
