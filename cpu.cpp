@@ -18,15 +18,14 @@ CPU::CPU(Memory* mem){
 
 //skeptical on handling returning cycles to our timers like this
 uint64_t CPU::cycle(){
-    if (ticks < static_cast<int>(cycles)) {
+    /*while (ticks < static_cast<int>(cycles)) {
         ticks++;
-        return 1;
-    }
-    ticks = 0;
+    }*/
+    //ticks = 0;
     printRegisters();
     uint8_t opcode = memory->read(pc);
     execute(opcode);
-    return 1;
+    return cycles;
 }
 
 void CPU::update(uint8_t pc_inc, uint8_t cycles_inc){
@@ -1070,6 +1069,9 @@ void CPU::execute(uint8_t opcode){
             {
                 uint8_t n = memory->read(pc+1);
                 uint16_t addr = 0xFF00 + n;
+                
+                //debug output
+                //std::cout << std::uppercase << std::hex << addr << " : " << (int)memory->read(addr) << std::endl;
                 a = memory->read(addr);
                 update(2,12);
                 break;

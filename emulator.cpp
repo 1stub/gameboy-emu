@@ -1,4 +1,5 @@
 #include "emulator.hpp"
+#include <chrono>
 
 #define DIV 0xFF04
 #define TIMA 0xFF05
@@ -11,24 +12,41 @@ Emulator::Emulator(CPU* cpu, Memory* mem){
 }
 
 void Emulator::emulate(){
+    const int cyclesPerFrame= 69905; //cpu speed / 60
+    const int frameRate = 60; 
+    const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
+    bool doneExecution = false;
     while(true){
-        uint64_t cycles = m_cpu->cycle();
-        updateTimers(cycles);
-        doInterrupts(); 
+        int currentCycle = 0;
+        auto frameStartTime = std::chrono::steady_clock::now();
 
-        //ideally this would be handled within write() in mmu, but my approach is scuffed
-        //so this is what we got lmao
-        if(m_memory->read(0xFF02) & 0x80){
-            char val = m_memory->performSerialTransfer();
-            if(val == 'F'){
-                //std::cout << "ENCOUNTERED ERROR" << std::endl;
-                m_cpu->printRegisters();
-                break;
+        while(currentCycle < cyclesPerFrame){
+            uint64_t cycles = m_cpu->cycle(); //returns T cycles (4,8,12,...) for each instr
+            currentCycle += cycles;
+            updateTimers(cycles);
+            doInterrupts(); 
+
+            //ideally this would be handled within write() in mmu, but my approach is scuffed
+            //so this is what we got lmao
+            if(m_memory->read(0xFF02) & 0x80){
+                char val = m_memory->performSerialTransfer();
+                if(val == 'F' || val == 'P'){
+                    doneExecution = true;
+                    break;
+                }
             }
-            if(val == 'P'){ 
-                std::cout << "PASSED" << std::endl;
-                break;
-            }
+        }
+
+        if(doneExecution) return;
+
+        auto frameEndTime = std::chrono::steady_clock::now();
+        auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEndTime - frameStartTime);
+
+        if (frameDuration < timePerFrame) {
+            //we dont need multithreading, we just need to force the thread the cpu is running on to sleep
+            std::this_thread::sleep_for(timePerFrame - frameDuration);
+        } else {
+            std::cerr << "Frame took too long: " << frameDuration.count() << " ms\n";
         }
     }
 }
@@ -65,7 +83,7 @@ void Emulator::updateTimers(uint64_t cycles){
                 m_memory->write(TIMA, m_memory->read(TMA)); //reset to value specified in TMA (0xFF06)
                 serviceInterrupt(2); //service timer interupt 
             }else{
-                m_memory->m_Rom[TIMA]++; //increase TIMA by val in TMA if there is not overflow
+                m_memory->write(TIMA, m_memory->read(TIMA)+1); //increase TIMA by val in TMA if there is not overflow
             }
         }
     }

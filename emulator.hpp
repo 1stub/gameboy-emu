@@ -4,6 +4,9 @@
 #include "memory.hpp"
 #include "cpu.hpp"
 
+#include <chrono>
+#include <thread>
+
 class Emulator{
     public:
         Emulator(CPU* cpu, Memory* mem);
