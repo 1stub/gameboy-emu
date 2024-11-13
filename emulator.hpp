@@ -14,7 +14,10 @@ class Emulator{
         void updateTimers(uint64_t cycles);
         void doInterrupts();
         void serviceInterrupt(int interrupt);
+        void updateGraphics(int cycles);
+        void setLCDStatus();
     private:
+        int m_ScanlineCounter = 456;
         CPU* m_cpu;
         Memory* m_memory;
 };

@@ -5,6 +5,8 @@
 #define TIMA 0xFF05
 #define TMA 0xFF06
 #define TAC 0xFF07
+#define LCDC 0xFF40
+#define LY 0xFF44
 
 Emulator::Emulator(CPU* cpu, Memory* mem){
    m_cpu = cpu;
@@ -12,7 +14,8 @@ Emulator::Emulator(CPU* cpu, Memory* mem){
 }
 
 void Emulator::emulate(){
-    const bool debug = false;
+    //eventually I will have this ise sf::Time from sfml rather than chrono
+    const bool debug = false; //false == print blargg output, true == print reg contents
     const int cyclesPerFrame= 69905; //cpu speed / 60
     const int frameRate = 60; 
     const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
@@ -26,6 +29,7 @@ void Emulator::emulate(){
             uint64_t cycles = m_cpu->cycle(); //returns T cycles (4,8,12,...) for each instr
             currentCycle += cycles;
             updateTimers(cycles);
+            //updateGraphics(cycles);
             doInterrupts(); 
 
             //ideally this would be handled within write() in mmu, but my approach is scuffed
@@ -36,10 +40,12 @@ void Emulator::emulate(){
                     if(val == ' ') std::cout << std::endl;
                     else std::cout << val;
                 }
-                if(debug)if(val == 'F' || val == 'P'){
-                    //this allows us to break when we reach a F or P in serial output
-                    doneExecution = true;
-                    break;
+                if(debug){
+                    if(val == 'F' || val == 'P'){
+                        //this allows us to break when we reach a F or P in serial output
+                        doneExecution = true;
+                        break;
+                    }
                 }
             }
         }
@@ -126,4 +132,109 @@ void Emulator::serviceInterrupt(int interrupt){
         case 3: m_cpu->pc = 0x58; break; //serial
         case 4: m_cpu->pc = 0x60; break; //Joypad
     }
+}
+
+void Emulator::updateGraphics(int cycles){
+    //in regards to my current issues with reading from LY,
+    //LY stores what scan line we are on. SO in order to read
+    //correct values, we need some manner to track where we actually are.
+    //once we have rendered the whole window, LY should be 0x90 = 144 because
+    //that means we scanned 144 lines of the window and our screen is 160x144 
+    
+    setLCDStatus();
+
+    if(m_memory->read(LCDC) & (1 << 7)){ //LCD Enabled
+        m_ScanlineCounter -= cycles; 
+    }else return;
+
+    if(m_ScanlineCounter <= 0){
+        m_memory->m_Rom[LY]++;
+        uint8_t curLine = m_memory->read(LY);
+
+        m_ScanlineCounter = 456;
+
+        if(curLine == 144) serviceInterrupt(0); //vblank
+        else if(curLine > 153) m_memory->write(LY, 0);
+        else if(curLine < 144) { } //draw scan line
+        else { /*do nothing*/ }
+    }
+}
+
+void Emulator::setLCDStatus(){
+    uint8_t status = m_memory->read(0xFF41);
+
+    if (!(m_memory->read(LCDC) & (1 << 7))) // Check if LCD is disabled
+    {
+        // Set the mode to 1 during LCD disable and reset scanline
+        m_ScanlineCounter = 456;
+        m_memory->write(LY, 0);
+        status &= 0xFC; // Clear bits 0 and 1
+        status |= 0x01; // Set bit 0
+        m_memory->write(0xFF41, status);
+        return;
+    }
+
+    uint8_t currentline = m_memory->read(LY);
+    uint8_t currentmode = status & 0x03;
+
+    uint8_t mode = 0;
+    bool reqInt = false;
+
+    // In V-Blank, set mode to 1
+    if (currentline >= 144)
+    {
+        mode = 1;
+        status |= 0x01;  // Set bit 0
+        status &= ~0x02; // Clear bit 1
+        reqInt = status & (1 << 4);
+    }
+    else
+    {
+        int mode2bounds = 456 - 80;
+        int mode3bounds = mode2bounds - 172;
+
+        // Mode 2
+        if (m_ScanlineCounter >= mode2bounds)
+        {
+            mode = 2;
+            status |= 0x02;  // Set bit 1
+            status &= ~0x01; // Clear bit 0
+            reqInt = status & (1 << 5);
+        }
+        // Mode 3
+        else if (m_ScanlineCounter >= mode3bounds)
+        {
+            mode = 3;
+            status |= 0x03; // Set bits 1 and 0
+        }
+        // Mode 0
+        else
+        {
+            mode = 0;
+            status &= ~0x03; // Clear bits 1 and 0
+            reqInt = status & (1 << 3);
+        }
+    }
+
+    // If entering a new mode, request an interrupt
+    if (reqInt && (mode != currentmode))
+    {
+        serviceInterrupt(1); // Request LCD interrupt
+    }
+
+    // Check the coincidence flag
+    if (currentline == m_memory->read(0xFF45))
+    {
+        status |= (1 << 2); // Set bit 2
+        if (status & (1 << 6))
+        {
+            serviceInterrupt(1); // Request interrupt if bit 6 is set
+        }
+    }
+    else
+    {
+        status &= ~(1 << 2); // Clear bit 2
+    }
+
+    m_memory->write(0xFF41, status);
 }
