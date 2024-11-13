@@ -7,6 +7,7 @@
 #define TAC 0xFF07
 #define LCDC 0xFF40
 #define LY 0xFF44
+#define IF 0xFF0F
 
 Emulator::Emulator(CPU* cpu, Memory* mem){
    m_cpu = cpu;
@@ -15,7 +16,7 @@ Emulator::Emulator(CPU* cpu, Memory* mem){
 
 void Emulator::emulate(){
     //eventually I will have this ise sf::Time from sfml rather than chrono
-    const bool debug = false; //false == print blargg output, true == print reg contents
+    const bool debug = true; //false == print blargg output, true == print reg contents
     const int cyclesPerFrame= 69905; //cpu speed / 60
     const int frameRate = 60; 
     const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
@@ -29,7 +30,7 @@ void Emulator::emulate(){
             uint64_t cycles = m_cpu->cycle(); //returns T cycles (4,8,12,...) for each instr
             currentCycle += cycles;
             updateTimers(cycles);
-            //updateGraphics(cycles);
+            updateGraphics(cycles);
             doInterrupts(); 
 
             //ideally this would be handled within write() in mmu, but my approach is scuffed
@@ -101,6 +102,14 @@ void Emulator::updateTimers(uint64_t cycles){
     }
 }
 
+//when we want to interrupt, we first need to set the IF flag corresponding bit to our interrupt. then the rest is
+//handled in our interrrupt processing logic
+void Emulator::requestInterrupt(int interrupt){
+    uint8_t data = m_memory->read(IF);
+    data |= (1 << interrupt);
+    m_memory->write(IF, data);
+}
+
 void Emulator::doInterrupts(){
     if(m_cpu->ime){
         uint8_t req = m_memory->read(0xFF0F); //this is the IF
@@ -134,6 +143,8 @@ void Emulator::serviceInterrupt(int interrupt){
     }
 }
 
+//currently dealing with speed issues regarding our graphics here
+
 void Emulator::updateGraphics(int cycles){
     //in regards to my current issues with reading from LY,
     //LY stores what scan line we are on. SO in order to read
@@ -153,8 +164,12 @@ void Emulator::updateGraphics(int cycles){
 
         m_ScanlineCounter = 456;
 
-        if(curLine == 144) serviceInterrupt(0); //vblank
-        else if(curLine > 153) m_memory->write(LY, 0);
+        //below lines create some issues
+        //i think the problem is that we need the interupt to be requested
+        //the IF register needs to be bitset in order to service given interrtupt
+
+        if(curLine == 144) requestInterrupt(0); //vblank
+        else if(curLine > 153) m_memory->m_Rom[LY] = 0;
         else if(curLine < 144) { } //draw scan line
         else { /*do nothing*/ }
     }
@@ -167,7 +182,7 @@ void Emulator::setLCDStatus(){
     {
         // Set the mode to 1 during LCD disable and reset scanline
         m_ScanlineCounter = 456;
-        m_memory->write(LY, 0);
+        m_memory->m_Rom[LY] = 0;
         status &= 0xFC; // Clear bits 0 and 1
         status |= 0x01; // Set bit 0
         m_memory->write(0xFF41, status);
@@ -219,7 +234,7 @@ void Emulator::setLCDStatus(){
     // If entering a new mode, request an interrupt
     if (reqInt && (mode != currentmode))
     {
-        serviceInterrupt(1); // Request LCD interrupt
+        requestInterrupt(1); // Request LCD interrupt
     }
 
     // Check the coincidence flag
@@ -228,7 +243,7 @@ void Emulator::setLCDStatus(){
         status |= (1 << 2); // Set bit 2
         if (status & (1 << 6))
         {
-            serviceInterrupt(1); // Request interrupt if bit 6 is set
+            requestInterrupt(1); // Request interrupt if bit 6 is set
         }
     }
     else
