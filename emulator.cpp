@@ -12,6 +12,7 @@ Emulator::Emulator(CPU* cpu, Memory* mem){
 }
 
 void Emulator::emulate(){
+    const bool debug = false;
     const int cyclesPerFrame= 69905; //cpu speed / 60
     const int frameRate = 60; 
     const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
@@ -21,6 +22,7 @@ void Emulator::emulate(){
         auto frameStartTime = std::chrono::steady_clock::now();
 
         while(currentCycle < cyclesPerFrame){
+            if(debug) m_cpu->printRegisters();
             uint64_t cycles = m_cpu->cycle(); //returns T cycles (4,8,12,...) for each instr
             currentCycle += cycles;
             updateTimers(cycles);
@@ -30,7 +32,12 @@ void Emulator::emulate(){
             //so this is what we got lmao
             if(m_memory->read(0xFF02) & 0x80){
                 char val = m_memory->performSerialTransfer();
-                if(val == 'F' || val == 'P'){
+                if(!debug){
+                    if(val == ' ') std::cout << std::endl;
+                    else std::cout << val;
+                }
+                if(debug)if(val == 'F' || val == 'P'){
+                    //this allows us to break when we reach a F or P in serial output
                     doneExecution = true;
                     break;
                 }
@@ -56,11 +63,10 @@ void Emulator::emulate(){
 void Emulator::updateTimers(uint64_t cycles){
     //our timer control, TAC is at 0xFF07, second bit is the control bit
     static int timerCounter = 0;
-    static int dividerCounter = 0;
     
-    dividerCounter += cycles;
-    if(dividerCounter >= 256){ //was working here
-        dividerCounter -= 256;
+    m_memory->m_dividerCounter += cycles;
+    if(m_memory->m_dividerCounter >= 256){ //was working here
+        m_memory->m_dividerCounter -= 256;
         m_memory->m_Rom[DIV]++;
     }
 
@@ -77,9 +83,9 @@ void Emulator::updateTimers(uint64_t cycles){
             case 0x03: timerThreshold = 256; break; //freq 16382
             default: break;
         }
-        if(timerCounter >= timerThreshold){
+        if(timerCounter > timerThreshold){
             timerCounter -= timerThreshold;
-            if(m_memory->read(TIMA) >= 0xFF){ //timer counter overflow
+            if(m_memory->read(TIMA) == 0xFF){ //timer counter overflow
                 m_memory->write(TIMA, m_memory->read(TMA)); //reset to value specified in TMA (0xFF06)
                 serviceInterrupt(2); //service timer interupt 
             }else{

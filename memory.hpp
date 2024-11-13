@@ -15,6 +15,7 @@ class Memory{
         void loadRom(std::string location);
         char performSerialTransfer();
 
+        int m_dividerCounter = 0;
         uint8_t m_Rom[0x10000];  
         std::string serial_output;
 };

@@ -14,8 +14,6 @@ class Emulator{
         void updateTimers(uint64_t cycles);
         void doInterrupts();
         void serviceInterrupt(int interrupt);
-
-        int m_clockSpeed;
     private:
         CPU* m_cpu;
         Memory* m_memory;

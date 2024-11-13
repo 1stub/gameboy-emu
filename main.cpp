@@ -13,10 +13,10 @@ int main(int argc, char *argv[]){
     emu->emulate();
 
     //jsonTesting jsonTesting(cpu, memory);
-    //if(!jsonTesting.test()) std::cout << "All tests passed successfully." << std::endl;
+    //if(!jsonTesting.test()) std::cout << "All tests passed successfully." << std::endl; 
+    delete(emu);
     delete(memory);
     delete(cpu);
-    delete(emu);
     return 0;
 }
 

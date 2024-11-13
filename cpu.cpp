@@ -22,7 +22,6 @@ uint64_t CPU::cycle(){
         ticks++;
     }*/
     //ticks = 0;
-    printRegisters();
     uint8_t opcode = memory->read(pc);
     execute(opcode);
     return cycles;
@@ -996,9 +995,9 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xDE):
             {
-            sbc(&a, memory->read(pc+1)); pc++;
-            update(2,8);
-            break;
+                sbc(&a, memory->read(pc++));
+                update(2,8);
+                break;
             }
         case (0xDF): 
             rst(0x18);
@@ -1069,9 +1068,6 @@ void CPU::execute(uint8_t opcode){
             {
                 uint8_t n = memory->read(pc+1);
                 uint16_t addr = 0xFF00 + n;
-                
-                //debug output
-                //std::cout << std::uppercase << std::hex << addr << " : " << (int)memory->read(addr) << std::endl;
                 a = memory->read(addr);
                 update(2,12);
                 break;
@@ -1329,13 +1325,11 @@ void CPU::sub(uint8_t *dst, uint8_t value) {
 void CPU::sbc(uint8_t *dst, uint8_t value) {
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
 
-    uint16_t fullResult = *dst - value - carryBitSet;
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>((value & 0x0F) + carryBitSet > (*dst & 0x0F));
+    setFlags<RegisterFlags::CARRY_FLAG>((value + carryBitSet) > *dst);
+    *dst -= (value + carryBitSet);
 
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>(((*dst & 0x0F) < ((value & 0x0F) + carryBitSet)));
-    setFlags<RegisterFlags::CARRY_FLAG>(fullResult > 0xFF);
-    *dst = (uint8_t)fullResult;
-
-    setFlags<RegisterFlags::ZERO_FLAG>(fullResult == 0);
+    setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
 

@@ -37,6 +37,11 @@ Memory::Memory(){
 void Memory::write(uint16_t addr, uint8_t data){
     if(addr == 0xFF04){ //writing to DIV and LY reset it to zero
         m_Rom[0xFF04] = 0x00;
+        m_dividerCounter = 0;
+    }
+
+    else if(addr == 0xFF44){
+        m_Rom[0xFF44] = 0x00;
     }
 
     else{ //this shouldnt be done, but while I figure out how to flesh out writing its fine
@@ -76,8 +81,6 @@ void Memory::loadRom(std::string location){
 
 char Memory::performSerialTransfer(){
     char data = (char)m_Rom[0xFF01];
-    //if(data == ' ') std::cout << std::endl;
-    //std::cout << data;
     m_Rom[0xFF02] &= 0x7F; //clear the transfer flag
     return data;
 }
