@@ -89,6 +89,8 @@ class CPU{
         void res(uint8_t bitNo, uint8_t *reg);
 
         bool ime; //enable/disable intererupts
+        bool is_halted = false;
+        bool is_halt_bug = false;
         uint16_t pc; //program counter
         uint16_t sp; //stack pointer
     private:

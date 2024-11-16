@@ -4,6 +4,7 @@
 #include "memory.hpp"
 #include "cpu.hpp"
 
+#include <regex>
 #include <chrono>
 #include <thread>
 

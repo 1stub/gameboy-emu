@@ -20,6 +20,8 @@ void Emulator::emulate(){
     const int cyclesPerFrame= 69905; //cpu speed / 60
     const int frameRate = 60; 
     const auto timePerFrame = std::chrono::milliseconds(1000 / frameRate);
+    static std::string output;
+    std::smatch m;
     bool doneExecution = false;
     while(true){
         int currentCycle = 0;
@@ -30,7 +32,7 @@ void Emulator::emulate(){
             uint64_t cycles = m_cpu->cycle(); //returns T cycles (4,8,12,...) for each instr
             currentCycle += cycles;
             updateTimers(cycles);
-            updateGraphics(cycles);
+            //updateGraphics(cycles);
             doInterrupts(); 
 
             //ideally this would be handled within write() in mmu, but my approach is scuffed
@@ -39,10 +41,13 @@ void Emulator::emulate(){
                 char val = m_memory->performSerialTransfer();
                 if(!debug){
                     if(val == ' ') std::cout << std::endl;
-                    else std::cout << val;
+                    else{
+                        output += val;
+                        std::cout << val;
+                    }
                 }
                 if(debug){
-                    if(val == 'F' || val == 'P'){
+                    if(std::regex_match(output, m, std::regex("(Passed)|(Failed)"))){
                         //this allows us to break when we reach a F or P in serial output
                         doneExecution = true;
                         break;

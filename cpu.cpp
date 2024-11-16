@@ -1,5 +1,8 @@
 #include "cpu.hpp"
 
+#define IF 0xFF0F
+#define IE 0xFFFF 
+
 //need to implement some very basic logic to load opcodes from external source into memory, then simulate using pc to load and modify values
 //looks like using blarg tests will be best here
 
@@ -18,10 +21,7 @@ CPU::CPU(Memory* mem){
 
 //skeptical on handling returning cycles to our timers like this
 uint64_t CPU::cycle(){
-    /*while (ticks < static_cast<int>(cycles)) {
-        ticks++;
-    }*/
-    //ticks = 0;
+
     uint8_t opcode = memory->read(pc);
     execute(opcode);
     return cycles;
@@ -570,10 +570,18 @@ void CPU::execute(uint8_t opcode){
             break;
         }
         case 0x76: 
-            // HALT implementation will go here in the future
-            
-            update(1, 4);
-            break;
+            {
+                //halt bug
+                if(!ime && (memory->read(IF) & memory->read(IE))){
+                    is_halt_bug = true;
+                    is_halted = false;
+                    update(1,4);
+                }else{
+                   is_halted = true;
+                }
+                update(0,4);
+                break;
+            }
         case 0x77: {
             uint8_t val = a;
             memory->write(hl,val);
@@ -995,7 +1003,7 @@ void CPU::execute(uint8_t opcode){
             break;
         case (0xDE):
             {
-                sbc(&a, memory->read(pc++));
+                sbc(&a, memory->read(pc+1));
                 update(2,8);
                 break;
             }
@@ -1038,7 +1046,7 @@ void CPU::execute(uint8_t opcode){
                 update(2,16);
             }
             break;
-        case (0xE9): //TODO NEXT! 
+        case (0xE9):  
             pc=hl;
             update(0,4);
             break;
@@ -1324,11 +1332,12 @@ void CPU::sub(uint8_t *dst, uint8_t value) {
 
 void CPU::sbc(uint8_t *dst, uint8_t value) {
     uint8_t carryBitSet = (f & (uint8_t)RegisterFlags::CARRY_FLAG) ? 1 : 0;
+    uint16_t full_result = *dst - value - carryBitSet;
 
-    setFlags<RegisterFlags::HALF_CARRY_FLAG>((value & 0x0F) + carryBitSet > (*dst & 0x0F));
-    setFlags<RegisterFlags::CARRY_FLAG>((value + carryBitSet) > *dst);
-    *dst -= (value + carryBitSet);
-
+    setFlags<RegisterFlags::HALF_CARRY_FLAG>((*dst & 0x0F) < (value & 0x0F) + carryBitSet);
+    setFlags<RegisterFlags::CARRY_FLAG>(full_result > 0xFF);
+    *dst = (uint8_t)full_result;
+    
     setFlags<RegisterFlags::ZERO_FLAG>(*dst == 0);
     setFlags<RegisterFlags::SUBTRACT_FLAG>(true);
 }
